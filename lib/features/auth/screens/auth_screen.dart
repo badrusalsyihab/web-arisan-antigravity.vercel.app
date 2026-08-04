@@ -70,12 +70,12 @@ class _AuthScreenState extends State<AuthScreen> {
       widget.onAuthSuccess(user);
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.message ?? 'Terjadi kesalahan autentikasi'),
             backgroundColor: AppTheme.danger,
           ),
-        );
+        ); */
       }
     } catch (_) {
       // Fallback
@@ -129,12 +129,12 @@ class _AuthScreenState extends State<AuthScreen> {
       await FirebaseService().saveUserProfile(user);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Selamat Datang, $userName!'),
             backgroundColor: AppTheme.accent,
           ),
-        );
+        ); */
         widget.onAuthSuccess(user);
       }
     } catch (e) {
@@ -148,12 +148,12 @@ class _AuthScreenState extends State<AuthScreen> {
       await FirebaseService().saveUserProfile(user);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Selamat Datang, Badrus Alsyihab!'),
             backgroundColor: AppTheme.accent,
           ),
-        );
+        ); */
         widget.onAuthSuccess(user);
       }
     } finally {
@@ -427,23 +427,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Demo / Guest Mode Button
-                  TextButton(
-                    onPressed: () async {
-                      try {
-                        await FirebaseAuth.instance.signInAnonymously();
-                      } catch (_) {}
-                      widget.onAuthSuccess(UserModel(
-                        name: 'Badrus Alsyihab',
-                        email: 'badrusalsyihab@gmail.com',
-                        phone: '0812-9988-7766',
-                      ));
-                    },
-                    child: const Text(
-                      '🚀 Masuk Mode Demo / Tamu',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accent),
-                    ),
-                  ),
+
                 ],
               ),
             ),

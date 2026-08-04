@@ -137,12 +137,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           if (context.mounted) {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            /* ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('✅ No. WhatsApp berhasil diperbarui!'),
                                 backgroundColor: AppTheme.accent,
                               ),
-                            );
+                            ); */
                           }
                         }
                       },
@@ -279,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 18),
 
                 // Logout Button
-                OutlinedButton.icon(
+                OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.danger,
                     side: const BorderSide(color: AppTheme.danger, width: 1.5),
@@ -287,8 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     minimumSize: const Size.fromHeight(40),
                   ),
                   onPressed: widget.onLogout,
-                  icon: const Icon(Icons.logout, size: 16),
-                  label: const Text('Keluar Akun', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: const Text('Keluar Akun', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
                 const SizedBox(height: 16),
                 FutureBuilder<PackageInfo>(
@@ -345,7 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   },
                   icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                  label: const Text('➕ Buat Kelompok Arisan Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  label: const Text('Buat Kelompok Arisan Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ],
             ),

@@ -119,7 +119,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     items: const [
                       DropdownMenuItem(value: 'bulanan', child: Text('Bulanan (Bulan 1, Bulan 2...)')),
                       DropdownMenuItem(value: 'mingguan', child: Text('Mingguan (Minggu 1, Minggu 2...)')),
-                      DropdownMenuItem(value: '2mingguan', child: Text('2-Mingguan (Setiap 2 Minggu)')),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _periodType = val);
@@ -167,9 +166,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     onPressed: () {
                       final groupName = _nameController.text.trim();
                       if (groupName.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        /* ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Nama kelompok arisan wajib diisi')),
-                        );
+                        ); */
                         return;
                       }
 

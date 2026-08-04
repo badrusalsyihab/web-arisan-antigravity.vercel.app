@@ -50,12 +50,12 @@ class NoGroupScreen extends StatelessWidget {
               final code = codeCtrl.text.trim();
               if (code.isEmpty) return;
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+              /* ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Berhasil bergabung ke kelompok $code!'),
                   backgroundColor: AppTheme.accent,
                 ),
-              );
+              ); */
             },
             child: const Text('Gabung', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),

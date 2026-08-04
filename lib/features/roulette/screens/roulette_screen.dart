@@ -44,9 +44,9 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
 
     final candidates = widget.group.members.where((m) => !m.isWinner).toList();
     if (candidates.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      /* ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Seluruh anggota sudah pernah menang pada siklus ini!')),
-      );
+      ); */
       return;
     }
 
@@ -185,7 +185,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
           const SizedBox(height: 40),
 
           // Spin Button
-          ElevatedButton.icon(
+          ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
               minimumSize: const Size.fromHeight(50),
@@ -193,13 +193,19 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
               elevation: 4,
             ),
             onPressed: isSpinning ? null : _spinWheel,
-            icon: isSpinning
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Icon(Icons.casino, color: Colors.white),
-            label: Text(
-              isSpinning ? 'MEMUTAR ROULETTE...' : '🎰 PUTAR ROULETTE (AKSES KETUA)',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
+            child: isSpinning
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                      SizedBox(width: 10),
+                      Text('MEMUTAR ROULETTE...', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  )
+                : const Text(
+                    'PUTAR ROULETTE (AKSES KETUA)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
           ),
         ],
       ),

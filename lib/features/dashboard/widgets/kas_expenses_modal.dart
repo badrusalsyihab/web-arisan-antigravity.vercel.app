@@ -41,9 +41,9 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
     final amount = double.tryParse(amountStr) ?? 0;
 
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      /* ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nominal pengeluaran harus lebih dari 0')),
-      );
+      ); */
       return;
     }
 
@@ -60,15 +60,15 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
       _titleController.clear();
       _amountController.clear();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pengeluaran berhasil dicatat')),
-        );
+        ); */
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mencatat pengeluaran: $e')),
-        );
+        ); */
       }
     } finally {
       if (mounted) {
@@ -150,7 +150,19 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                         separatorBuilder: (context, index) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final exp = expenses[index];
-                          final date = exp['date'] != null ? (exp['date'] as Timestamp).toDate() : DateTime.now();
+                          DateTime date = DateTime.now();
+                          final rawDate = exp['date'];
+                          if (rawDate is Timestamp) {
+                            date = rawDate.toDate();
+                          } else if (rawDate is String) {
+                            try {
+                              final parts = rawDate.split('/');
+                              if (parts.length == 3) {
+                                date = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+                              }
+                            } catch (_) {}
+                          }
+                          
                           final amount = (exp['amount'] ?? 0).toDouble();
 
                           return ListTile(

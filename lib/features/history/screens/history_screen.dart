@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/services/firebase_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistoryScreen extends StatefulWidget {
   final GroupModel group;
@@ -118,15 +119,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           await FirebaseService().addKasExpense(widget.group.id, {
                             'title': titleController.text.trim(),
                             'amount': amount,
-                            'date': '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}', // Real date format
+                            'date': Timestamp.now(), // Store as Firestore Timestamp
                             'period': widget.group.getPeriodLabel(widget.group.activePeriodIndex),
                           });
 
                           if (context.mounted) {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            /* ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Catatan pengeluaran kas berhasil disimpan!')),
-                            );
+                            ); */
                           }
                         }
                       },
@@ -200,7 +201,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     onPressed: _showAddExpenseModal,
                     icon: const Icon(Icons.remove_circle_outline, size: 16, color: AppTheme.limeAccent),
                     label: const Text(
-                      '+ Keluar Kas',
+                      'Keluar Kas',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),

@@ -284,6 +284,8 @@ class FirebaseService {
         'title': photoItem['title'],
         'emoji': photoItem['emoji'] ?? '📸',
         'driveUrl': photoItem['driveUrl'] ?? '',
+        'url': photoItem['url'] ?? '',
+        'uploadedBy': photoItem['uploadedBy'] ?? '',
         'date': photoItem['date'] ?? 'Hari Ini',
         'createdAt': FieldValue.serverTimestamp(),
       });

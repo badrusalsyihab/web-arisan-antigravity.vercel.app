@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/services/google_drive_service.dart';
+import '../../../core/services/imgbb_service.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/member_model.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -36,13 +36,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   late int selectedPeriodIndex;
 
-  // Demo documentation photos/events list
-  List<Map<String, String>> galleryItems = [
-    {'emoji': '🌺', 'title': 'Kocokan Periode 1', 'date': '15 Mei 2026'},
-    {'emoji': '🍱', 'title': 'Makan Bersama RT', 'date': '20 Mei 2026'},
-    {'emoji': '🎁', 'title': 'Penyerahan Pot Arisan', 'date': '15 Juni 2026'},
-    {'emoji': '📸', 'title': 'Foto Bersama Anggota', 'date': '10 Juli 2026'},
-  ];
+
 
   @override
   void initState() {
@@ -158,12 +152,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     widget.onGroupUpdated(updatedGroup);
     
-    ScaffoldMessenger.of(context).showSnackBar(
+    /* ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Anggota ${member.name} berhasil dihapus!'),
         backgroundColor: AppTheme.accent,
       ),
-    );
+    ); */
   }
 
   void _startNewCycle() {
@@ -205,12 +199,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     widget.onGroupUpdated(newGroup);
-    ScaffoldMessenger.of(context).showSnackBar(
+    /* ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Berhasil memulai siklus arisan baru!'),
         backgroundColor: AppTheme.primary,
       ),
-    );
+    ); */
   }
 
   Future<void> _pickImage() async {
@@ -218,48 +212,190 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
+        // Validasi tipe file (sederhana)
+        final ext = image.name.split('.').last.toLowerCase();
+        final validExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        if (!validExts.contains(ext)) {
+          if (mounted) {
+            /* ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Format tidak didukung! Harus berupa gambar (JPG/PNG/WEBP).'),
+                backgroundColor: AppTheme.warning,
+              ),
+            ); */
+          }
+          return;
+        }
+
+        final bytes = await image.readAsBytes();
+        
+        // Validasi ukuran maksimal 15MB
+        final sizeInBytes = bytes.lengthInBytes;
+        final sizeInMB = sizeInBytes / (1024 * 1024);
+        if (sizeInMB > 15) {
+          if (mounted) {
+            /* ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Ukuran gambar terlalu besar! Maksimal 15 MB.'),
+                backgroundColor: AppTheme.warning,
+              ),
+            ); */
+          }
+          return;
+        }
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          /* ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Mengunggah foto ke Google Drive...'),
+              content: Text('Mengunggah foto ke ImgBB...'),
             ),
-          );
+          ); */
         }
         
-        final bytes = await image.readAsBytes();
-        final driveService = GoogleDriveService();
-        final result = await driveService.uploadPhotoToDrive(
+        final imgbbService = ImgbbService();
+        final result = await imgbbService.uploadImage(
           photoTitle: image.name,
           emoji: '🖼️',
           bytes: bytes.toList(),
-          filename: image.name,
+          uploadedBy: widget.currentUser.email,
         );
 
         if (result != null) {
-          setState(() {
-            galleryItems.add(result);
-          });
+          await FirebaseService().addGalleryPhoto(widget.group.id, result);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            /* ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Foto berhasil diunggah ke Google Drive!'),
+                content: Text('Foto berhasil diunggah!'),
                 backgroundColor: AppTheme.accent,
               ),
-            );
+            ); */
           }
         }
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        /* ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gagal mengunggah foto: $e'),
             backgroundColor: AppTheme.warning,
           ),
-        );
+        ); */
       }
     }
+  }
+
+  void _showImageDetailModal(Map<String, String> item) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  child: item.containsKey('url')
+                      ? Image.network(
+                          item['url']!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: double.infinity,
+                          height: 200,
+                          color: const Color(0xFFF8FAFC),
+                          child: Center(
+                            child: Text(item['emoji']!, style: const TextStyle(fontSize: 64)),
+                          ),
+                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['title']!,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today, size: 14, color: AppTheme.textMuted),
+                          const SizedBox(width: 4),
+                          Text(item['date']!, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          if (item.containsKey('uploadedBy')) ...[
+                            const SizedBox(width: 16),
+                            const Icon(Icons.person, size: 14, color: AppTheme.textMuted),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                item['uploadedBy']!, 
+                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, size: 18),
+                              label: const Text('Tutup'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.textMain,
+                                side: const BorderSide(color: AppTheme.cardBorder),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                if (item.containsKey('url')) {
+                                  Share.share('Lihat dokumentasi Arisan: ${item['title']} - ${item['url']}');
+                                } else {
+                                  /* ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Hanya foto asli yang dapat dibagikan.')),
+                                  ); */
+                                }
+                              },
+                              icon: const Icon(Icons.share, size: 18),
+                              label: const Text('Bagikan'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showAddMemberDialog() {
@@ -373,7 +509,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     } catch (e) {
                       setStateDialog(() => isLoading = false);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat akun: $e'), backgroundColor: AppTheme.warning));
+                        /* ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat akun: $e'), backgroundColor: AppTheme.warning)); */
                       }
                       return; // Stop if failed to create user
                     }
@@ -409,12 +545,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   await widget.onGroupUpdated(updatedGroup);
                   if (context.mounted) {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    /* ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Anggota $name berhasil ditambahkan!'),
                         backgroundColor: AppTheme.accent,
                       ),
-                    );
+                    ); */
                   }
                 },
                 child: const Text('Simpan', style: TextStyle(color: Colors.white)),
@@ -619,24 +755,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       // Calculate Kas collected for THIS period to show on the card
                       final kasCollectedPeriod = kasPaidCount * group.kasAmount.toDouble();
 
-                      return InkWell(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (ctx) => SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.75,
-                              child: KasExpensesModal(
-                                groupId: group.id,
-                                totalKasIn: trueTotalKasIn,
-                                isAdmin: isAdmin,
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
+                      return Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: AppTheme.pastelCream,
@@ -656,7 +775,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                     child: const Icon(Icons.savings_outlined, color: AppTheme.warning, size: 20),
                                   ),
-                                  const Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.textMuted),
+                                  // Arrow icon removed
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -665,8 +784,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(CurrencyFormatter.formatRupiah(kasCollectedPeriod), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
                             ],
                           ),
-                        ),
-                      );
+                        );
                     }
                   ),
                 ),
@@ -706,7 +824,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
@@ -715,8 +833,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: group.isCompleted ? null : () => widget.onNavigateToTab(1),
-                  icon: const Icon(Icons.casino_outlined, color: Colors.white, size: 18),
-                  label: const Text('Spin Roulette', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Spin Roulette', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -790,9 +907,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   IconButton(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: group.joinCode));
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      /* ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Kode kelompok disalin!'), backgroundColor: AppTheme.primary),
-                      );
+                      ); */
                     },
                     icon: const Icon(Icons.copy, color: AppTheme.primary),
                     tooltip: 'Salin Kode',
@@ -835,7 +952,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             icon: const Icon(Icons.settings_outlined, size: 16, color: AppTheme.textMuted),
             label: const Text(
-              '⚙️ Atur Urutan Pemenang (Pilihan Admin)',
+              'Atur Urutan Pemenang (Pilihan Admin)',
               style: TextStyle(fontSize: 12, color: AppTheme.textMain, fontWeight: FontWeight.bold),
             ),
           ),
@@ -869,16 +986,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                     if (!group.isCompleted)
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          side: const BorderSide(color: AppTheme.primary),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
                         ),
                         onPressed: _showAddMemberDialog,
-                        icon: const Icon(Icons.person_add_alt_1, size: 14, color: Colors.white),
-                        label: const Text('➕ Tambah', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        icon: const Icon(Icons.person_add_alt_1, size: 14),
+                        label: const Text('Tambah', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
                   ],
                 ),
@@ -1111,44 +1228,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 14),
 
                 // 2x2 Photo Grid
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 1.25,
-                  ),
-                  itemCount: galleryItems.length,
-                  itemBuilder: (context, index) {
-                    final item = galleryItems[index];
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppTheme.cardBorder),
+                StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: FirebaseService().streamGallery(widget.group.id),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Terjadi kesalahan: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+                    }
+
+                    // Gabungkan foto dari Firebase dengan dummy (sebagai fallback agar terlihat cantik walau kosong)
+                    final firebaseItems = snapshot.data ?? [];
+                    final dummyItems = [
+                      {'emoji': '🌺', 'title': 'Kocokan Periode 1', 'date': '15 Mei 2026'},
+                      {'emoji': '🍱', 'title': 'Makan Bersama RT', 'date': '20 Mei 2026'},
+                      {'emoji': '🎁', 'title': 'Penyerahan Pot Arisan', 'date': '15 Juni 2026'},
+                      {'emoji': '📸', 'title': 'Foto Bersama Anggota', 'date': '10 Juli 2026'},
+                    ];
+                    
+                    final displayItems = [...firebaseItems, ...dummyItems];
+                    // Batasi maksimal 4 item di dashboard agar rapi
+                    final items = displayItems.take(4).toList();
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 1.25,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(item['emoji']!, style: const TextStyle(fontSize: 32)),
-                          const SizedBox(height: 6),
-                          Text(
-                            item['title']!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        return GestureDetector(
+                          onTap: () => _showImageDetailModal(item.cast<String, String>()),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppTheme.cardBorder),
+                              image: item.containsKey('url') 
+                                  ? DecorationImage(
+                                      image: NetworkImage(item['url']!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: Stack(
+                              children: [
+                                if (item.containsKey('url'))
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [Colors.transparent, Colors.black87],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (!item.containsKey('url')) ...[
+                                        Center(child: Text(item['emoji']!, style: const TextStyle(fontSize: 32))),
+                                        const Spacer(),
+                                      ],
+                                      Text(
+                                        item['title']!,
+                                        style: TextStyle(
+                                          fontSize: 11, 
+                                          fontWeight: FontWeight.bold, 
+                                          color: item.containsKey('url') ? Colors.white : AppTheme.textMain,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        item['date']!,
+                                        style: TextStyle(
+                                          fontSize: 9, 
+                                          color: item.containsKey('url') ? Colors.white70 : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            item['date']!,
-                            style: const TextStyle(fontSize: 9, color: AppTheme.textMuted),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 ),

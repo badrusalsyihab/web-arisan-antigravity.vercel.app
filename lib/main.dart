@@ -257,20 +257,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               final success = await _firebaseService.deleteGroup(activeGroup!.id);
               if (success) {
                 await UserSession.clearActiveGroupId();
+                final nextGroup = await _firebaseService.fetchLatestGroup();
                 if (mounted) {
                   setState(() {
-                    activeGroup = null;
+                    activeGroup = nextGroup;
                     _currentIndex = 0;
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  if (nextGroup != null) {
+                    await UserSession.saveActiveGroupId(nextGroup.id);
+                  }
+                  /* ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Kelompok berhasil dihapus.'), backgroundColor: AppTheme.primary),
-                  );
+                  ); */
                 }
               } else {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  /* ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Gagal menghapus kelompok.'), backgroundColor: AppTheme.warning),
-                  );
+                  ); */
                 }
               }
             },
@@ -417,7 +421,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   
                   if (isAdmin) {
                     return PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: AppTheme.textMain),
+                      icon: Icon(Icons.more_vert, color: _isScrolled ? Colors.white : AppTheme.textMain),
                       onSelected: (value) {
                         if (value == 'delete') {
                           _deleteGroup();
@@ -428,9 +432,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outline, color: AppTheme.warning, size: 20),
+                              Icon(Icons.delete_outline, color: Colors.red, size: 20),
                               SizedBox(width: 8),
-                              Text('Hapus Kelompok', style: TextStyle(color: AppTheme.warning)),
+                              Text('Hapus Kelompok', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -517,9 +521,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                           Navigator.pop(context);
                           if (!isActive) {
                             _onGroupStateUpdated(group);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Berhasil beralih ke kelompok ${group.name}')),
-                            );
                           }
                         },
                       );
