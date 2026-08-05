@@ -39,6 +39,19 @@ class GroupModel {
   // Group is completed when all periods have winners
   bool get isCompleted => winnerSchedule.length >= totalPeriods;
 
+  // Check if a user is an Admin of this group
+  bool isAdmin(String? userId) {
+    if (userId == null || members.isEmpty) return false;
+    // Format email to userId if it's an email format
+    final formattedUserId = userId.replaceAll('.', '_').replaceAll('@', '_at_');
+    try {
+      final member = members.firstWhere((m) => m.userId == formattedUserId);
+      return member.role == 'Admin';
+    } catch (e) {
+      return false;
+    }
+  }
+
   String getPeriodLabel(int index) {
     if (periodType == 'bulanan') {
       final start = startDate ?? DateTime(2026, 8, 1);

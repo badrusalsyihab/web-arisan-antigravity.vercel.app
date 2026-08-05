@@ -426,6 +426,57 @@ class FirebaseService {
     }
   }
 
+  // Join Group as a completely new member
+  Future<bool> joinGroupAsNewMember(String groupId, String userId, String userName) async {
+    try {
+      final group = await getGroup(groupId);
+      if (group == null) return false;
+
+      // Check if already a member
+      if (group.memberUserIds.contains(userId)) return true;
+
+      final newMember = MemberModel(
+        id: 'm_${DateTime.now().millisecondsSinceEpoch}',
+        name: userName,
+        waNumber: '0812-0000-0000',
+        role: 'Member',
+        isWinner: false,
+        winPeriodLabel: 'Belum Menang',
+        userId: userId,
+        paymentStatuses: {
+          for (int i = 1; i <= (group.members.length + 1); i++) i: 'BELUM LUNAS'
+        },
+        kasPaymentStatuses: {
+          for (int i = 1; i <= (group.members.length + 1); i++) i: 'BELUM LUNAS'
+        },
+      );
+
+      final updatedMembers = List<MemberModel>.from(group.members)..add(newMember);
+      final updatedMemberUserIds = List<String>.from(group.memberUserIds)..add(userId);
+
+      final updatedGroup = GroupModel(
+        id: group.id,
+        name: group.name,
+        potAmount: group.potAmount,
+        hasKas: group.hasKas,
+        kasAmount: group.kasAmount,
+        periodType: group.periodType,
+        activePeriodIndex: group.activePeriodIndex,
+        members: updatedMembers,
+        winnerSchedule: group.winnerSchedule,
+        joinCode: group.joinCode,
+        memberUserIds: updatedMemberUserIds,
+        startDate: group.startDate,
+      );
+
+      await syncGroup(updatedGroup);
+      return true;
+    } catch (e) {
+      debugPrint("joinGroupAsNewMember error: $e");
+      return false;
+    }
+  }
+
   // Delete Group
   Future<bool> deleteGroup(String groupId) async {
     try {

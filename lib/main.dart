@@ -308,6 +308,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final Widget rouletteWidget = currentGroup != null
         ? RouletteScreen(
             group: currentGroup,
+            currentUser: widget.currentUser,
             onWinnerSelected: _onWinnerSelected,
           )
         : NoGroupScreen(
@@ -414,10 +415,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             if (currentGroup != null) ...[
               Builder(
                 builder: (context) {
-                  final isAdmin = currentGroup.members.firstWhere(
-                    (m) => m.userId == widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_'),
-                    orElse: () => currentGroup.members.first,
-                  ).role == 'Admin';
+                  final isAdmin = currentGroup.isAdmin(widget.currentUser.email);
                   
                   if (isAdmin) {
                     return PopupMenuButton<String>(

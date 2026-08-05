@@ -58,6 +58,21 @@ python3 -m http.server 8080 --directory build/web
 ```
 Buka browser dan akses **[http://localhost:8080](http://localhost:8080)**.
 
+### 5. Build Android App Bundle (.aab) Lokal via Terminal Mac
+Jika SDK Android dan Java (OpenJDK) belum dikenali otomatis, atur variabel lingkungan ini sebelum menjalankan proses *build*:
+```bash
+# Atur path Java (OpenJDK)
+export JAVA_HOME="/usr/local/opt/openjdk@17"
+export PATH="/usr/local/opt/openjdk@17/bin:$PATH"
+
+# Atur path Android SDK Command-line Tools
+export ANDROID_HOME="/usr/local/share/android-commandlinetools"
+
+# Jalankan proses build ke format AAB untuk Google Play Store
+flutter build appbundle
+```
+*File output AAB dapat ditemukan di `build/app/outputs/bundle/release/app-release.aab`.*
+
 ---
 
 ## 🛠️ Struktur Proyek

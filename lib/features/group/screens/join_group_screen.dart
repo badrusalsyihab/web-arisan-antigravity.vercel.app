@@ -92,6 +92,28 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     }
   }
 
+  Future<void> _joinAsNewMember() async {
+    if (_foundGroup == null) return;
+
+    setState(() => _isLoading = true);
+
+    final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
+    final success = await _firebaseService.joinGroupAsNewMember(_foundGroup!.id, userId, widget.currentUser.name);
+
+    if (success) {
+      final updatedGroup = await _firebaseService.getGroup(_foundGroup!.id);
+      if (updatedGroup != null && mounted) {
+        widget.onGroupJoined(updatedGroup);
+        Navigator.pop(context);
+      }
+    } else {
+      if (mounted) {
+        /* ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok sebagai anggota baru'))); */
+      }
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,9 +212,26 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: (_isLoading || _selectedMemberId == null) ? null : _joinGroup,
-                      child: _isLoading && _foundGroup != null
+                      child: _isLoading && _foundGroup != null && _selectedMemberId != null
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : const Text('✅ Ya, Ini Saya (Gabung)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    ),
+                    const SizedBox(height: 16),
+                    const Center(
+                      child: Text('ATAU', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primary,
+                        minimumSize: const Size.fromHeight(48),
+                        side: const BorderSide(color: AppTheme.primary),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: _isLoading ? null : _joinAsNewMember,
+                      child: _isLoading && _foundGroup != null && _selectedMemberId == null
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2))
+                          : const Text('🆕 Daftar sebagai Anggota Baru', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

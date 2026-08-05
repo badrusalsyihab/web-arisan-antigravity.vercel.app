@@ -55,6 +55,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _togglePaymentStatus(MemberModel member) {
+    if (!widget.group.isAdmin(widget.currentUser.email)) return;
+    
     final currentStatus = member.paymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
     final newStatus = currentStatus == 'LUNAS' ? 'BELUM LUNAS' : 'LUNAS';
 
@@ -83,6 +85,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _toggleKasPaymentStatus(MemberModel member) {
+    if (!widget.group.isAdmin(widget.currentUser.email)) return;
+
     final currentStatus = member.kasPaymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
     final newStatus = currentStatus == 'LUNAS' ? 'BELUM LUNAS' : 'LUNAS';
 
@@ -572,12 +576,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final totalCount = group.members.length;
     
     // Normalize user email to match how it's stored in userId/memberUserIds
-    final normalizedEmail = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
-    final currentUserMember = group.members.cast<MemberModel?>().firstWhere(
-      (m) => m?.userId == normalizedEmail, 
-      orElse: () => null,
-    );
-    final isAdmin = currentUserMember?.role == 'Admin';
+    final isAdmin = group.isAdmin(widget.currentUser.email);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -874,7 +873,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       minimumSize: const Size.fromHeight(44),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: _startNewCycle,
+                    onPressed: isAdmin ? _startNewCycle : null,
                     icon: const Icon(Icons.restart_alt, color: Colors.white, size: 18),
                     label: const Text('Mulai Siklus Baru', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
@@ -921,42 +920,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
 
           // Admin Winner Schedule Button
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(44),
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: AppTheme.cardBorder),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          if (isAdmin) ...[
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.textMain,
+                side: const BorderSide(color: AppTheme.cardBorder),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              onPressed: group.isCompleted ? null : () {
+                showDialog(
+                  context: context,
+                  builder: (context) => WinnerOrderModal(
+                    group: group,
+                    onSave: (newSchedule) {
+                      final updatedGroup = GroupModel(
+                        id: group.id,
+                        name: group.name,
+                        potAmount: group.potAmount,
+                        hasKas: group.hasKas,
+                        kasAmount: group.kasAmount,
+                        periodType: group.periodType,
+                        activePeriodIndex: group.activePeriodIndex,
+                        members: group.members,
+                        winnerSchedule: newSchedule,
+                        joinCode: group.joinCode,
+                        memberUserIds: group.memberUserIds,
+                        startDate: group.startDate,
+                      );
+                      widget.onGroupUpdated(updatedGroup);
+                    },
+                  ),
+                );
+              },
+              icon: const Icon(Icons.settings_outlined, size: 16, color: AppTheme.textMuted),
+              label: const Text(
+                'Atur Urutan Pemenang',
+                style: TextStyle(fontSize: 12, color: AppTheme.textMain, fontWeight: FontWeight.bold),
+              ),
             ),
-            onPressed: group.isCompleted ? null : () {
-              showDialog(
-                context: context,
-                builder: (context) => WinnerOrderModal(
-                  group: group,
-                  onSave: (newSchedule) {
-                    final updatedGroup = GroupModel(
-                      id: group.id,
-                      name: group.name,
-                      potAmount: group.potAmount,
-                      hasKas: group.hasKas,
-                      kasAmount: group.kasAmount,
-                      periodType: group.periodType,
-                      activePeriodIndex: group.activePeriodIndex,
-                      members: group.members,
-                      winnerSchedule: newSchedule,
-                    );
-                    widget.onGroupUpdated(updatedGroup);
-                  },
-                ),
-              );
-            },
-            icon: const Icon(Icons.settings_outlined, size: 16, color: AppTheme.textMuted),
-            label: const Text(
-              'Atur Urutan Pemenang (Pilihan Admin)',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMain, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+          ],
 
           // Member List Card
           Container(
@@ -985,7 +990,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Text(periodLabel, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    if (!group.isCompleted)
+                    if (!group.isCompleted && isAdmin)
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.primary,
@@ -1055,7 +1060,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   final winnerForPeriod = group.winnerSchedule[selectedPeriodIndex];
                   final isWinner = (winnerForPeriod == member.name);
-                  final isAdmin = group.members.firstWhere((m) => m.userId == widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_'), orElse: () => group.members.first).role == 'Admin';
                   final canDelete = isAdmin && member.role != 'Admin' && !group.isCompleted && !member.isWinner;
 
                   Widget memberRow = Container(
@@ -1111,7 +1115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             // Flag 1: Iuran Arisan
                             InkWell(
-                              onTap: group.isCompleted ? null : () => _togglePaymentStatus(member),
+                              onTap: (group.isCompleted || !isAdmin) ? null : () => _togglePaymentStatus(member),
                               borderRadius: BorderRadius.circular(14),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1135,7 +1139,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               // Flag 2: Iuran Kas
                               InkWell(
-                                onTap: group.isCompleted ? null : () => _toggleKasPaymentStatus(member),
+                                onTap: (group.isCompleted || !isAdmin) ? null : () => _toggleKasPaymentStatus(member),
                                 borderRadius: BorderRadius.circular(14),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

@@ -2,14 +2,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
+import '../../../core/models/user_model.dart';
 
 class RouletteScreen extends StatefulWidget {
   final GroupModel group;
+  final UserModel currentUser;
   final Function(String winnerName) onWinnerSelected;
 
   const RouletteScreen({
     super.key,
     required this.group,
+    required this.currentUser,
     required this.onWinnerSelected,
   });
 
@@ -142,6 +145,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     final candidates = widget.group.members.where((m) => !m.isWinner).map((m) => m.name).toList();
     final candidateList = candidates.isEmpty ? ['Semua', 'Sudah', 'Menang'] : candidates;
+    final isAdmin = widget.group.isAdmin(widget.currentUser.email);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -192,7 +196,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 4,
             ),
-            onPressed: isSpinning ? null : _spinWheel,
+            onPressed: (isSpinning || !isAdmin) ? null : _spinWheel,
             child: isSpinning
                 ? const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -202,9 +206,9 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
                       Text('MEMUTAR ROULETTE...', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                     ],
                   )
-                : const Text(
-                    'PUTAR ROULETTE (AKSES KETUA)',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                : Text(
+                    isAdmin ? 'PUTAR ROULETTE (AKSES KETUA)' : 'HANYA KETUA YANG BISA MEMUTAR',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
           ),
         ],
