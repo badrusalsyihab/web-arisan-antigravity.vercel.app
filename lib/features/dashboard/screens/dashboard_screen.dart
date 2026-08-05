@@ -70,16 +70,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return m;
     }).toList();
 
-    final updatedGroup = GroupModel(
-      id: widget.group.id,
-      name: widget.group.name,
-      potAmount: widget.group.potAmount,
-      hasKas: widget.group.hasKas,
-      kasAmount: widget.group.kasAmount,
-      periodType: widget.group.periodType,
-      activePeriodIndex: widget.group.activePeriodIndex,
+    final updatedGroup = widget.group.copyWith(
       members: updatedMembers,
-      winnerSchedule: widget.group.winnerSchedule,
     );
 
     widget.onGroupUpdated(updatedGroup);
@@ -101,16 +93,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return m;
     }).toList();
 
-    final updatedGroup = GroupModel(
-      id: widget.group.id,
-      name: widget.group.name,
-      potAmount: widget.group.potAmount,
-      hasKas: widget.group.hasKas,
-      kasAmount: widget.group.kasAmount,
-      periodType: widget.group.periodType,
-      activePeriodIndex: widget.group.activePeriodIndex,
+    final updatedGroup = widget.group.copyWith(
       members: updatedMembers,
-      winnerSchedule: widget.group.winnerSchedule,
     );
 
     widget.onGroupUpdated(updatedGroup);
@@ -148,17 +132,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .where((id) => id != member.userId)
         .toList();
 
-    final updatedGroup = GroupModel(
-      id: widget.group.id,
-      name: widget.group.name,
-      potAmount: widget.group.potAmount,
-      hasKas: widget.group.hasKas,
-      kasAmount: widget.group.kasAmount,
-      periodType: widget.group.periodType,
-      activePeriodIndex: widget.group.activePeriodIndex,
+    final updatedGroup = widget.group.copyWith(
       members: updatedMembers,
-      winnerSchedule: widget.group.winnerSchedule,
-      joinCode: widget.group.joinCode,
       memberUserIds: updatedUserIds,
     );
 
@@ -611,17 +586,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     final updatedMembers = List<MemberModel>.from(
                       widget.group.members,
                     )..add(newMember);
-                    final updatedGroup = GroupModel(
-                      id: widget.group.id,
-                      name: widget.group.name,
-                      potAmount: widget.group.potAmount,
-                      hasKas: widget.group.hasKas,
-                      kasAmount: widget.group.kasAmount,
-                      periodType: widget.group.periodType,
-                      activePeriodIndex: widget.group.activePeriodIndex,
+                    final updatedGroup = widget.group.copyWith(
                       members: updatedMembers,
-                      winnerSchedule: widget.group.winnerSchedule,
-                      joinCode: widget.group.joinCode,
                     );
 
                     await widget.onGroupUpdated(updatedGroup);
@@ -1148,19 +1114,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         builder: (context) => WinnerOrderModal(
                           group: group,
                           onSave: (newSchedule) {
-                            final updatedGroup = GroupModel(
-                              id: group.id,
-                              name: group.name,
-                              potAmount: group.potAmount,
-                              hasKas: group.hasKas,
-                              kasAmount: group.kasAmount,
-                              periodType: group.periodType,
-                              activePeriodIndex: group.activePeriodIndex,
-                              members: group.members,
+                            final updatedGroup = group.copyWith(
                               winnerSchedule: newSchedule,
-                              joinCode: group.joinCode,
-                              memberUserIds: group.memberUserIds,
-                              startDate: group.startDate,
                             );
                             widget.onGroupUpdated(updatedGroup);
                           },

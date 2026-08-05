@@ -241,13 +241,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ? group.activePeriodIndex + 1 
         : group.activePeriodIndex;
 
-    final updatedGroup = GroupModel(
-      id: group.id,
-      name: group.name,
-      potAmount: group.potAmount,
-      hasKas: group.hasKas,
-      kasAmount: group.kasAmount,
-      periodType: group.periodType,
+    final updatedGroup = group.copyWith(
       activePeriodIndex: nextPeriod,
       members: updatedMembers,
       winnerSchedule: updatedSchedule,

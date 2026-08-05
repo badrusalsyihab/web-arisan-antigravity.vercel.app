@@ -443,17 +443,8 @@ class FirebaseService {
         updatedMemberUserIds.add(userId);
       }
 
-      final updatedGroup = GroupModel(
-        id: group.id,
-        name: group.name,
-        potAmount: group.potAmount,
-        hasKas: group.hasKas,
-        kasAmount: group.kasAmount,
-        periodType: group.periodType,
-        activePeriodIndex: group.activePeriodIndex,
+      final updatedGroup = group.copyWith(
         members: updatedMembers,
-        winnerSchedule: group.winnerSchedule,
-        joinCode: group.joinCode,
         memberUserIds: updatedMemberUserIds,
       );
 
@@ -493,19 +484,9 @@ class FirebaseService {
       final updatedMembers = List<MemberModel>.from(group.members)..add(newMember);
       final updatedMemberUserIds = List<String>.from(group.memberUserIds)..add(userId);
 
-      final updatedGroup = GroupModel(
-        id: group.id,
-        name: group.name,
-        potAmount: group.potAmount,
-        hasKas: group.hasKas,
-        kasAmount: group.kasAmount,
-        periodType: group.periodType,
-        activePeriodIndex: group.activePeriodIndex,
+      final updatedGroup = group.copyWith(
         members: updatedMembers,
-        winnerSchedule: group.winnerSchedule,
-        joinCode: group.joinCode,
         memberUserIds: updatedMemberUserIds,
-        startDate: group.startDate,
       );
 
       await syncGroup(updatedGroup);

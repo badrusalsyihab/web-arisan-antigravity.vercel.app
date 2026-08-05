@@ -33,6 +33,38 @@ class GroupModel {
     this.kasExpenses = const [],
   });
 
+  GroupModel copyWith({
+    String? id,
+    String? name,
+    double? potAmount,
+    bool? hasKas,
+    double? kasAmount,
+    String? periodType,
+    int? activePeriodIndex,
+    List<MemberModel>? members,
+    Map<int, String>? winnerSchedule,
+    String? joinCode,
+    List<String>? memberUserIds,
+    DateTime? startDate,
+    List<KasExpenseModel>? kasExpenses,
+  }) {
+    return GroupModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      potAmount: potAmount ?? this.potAmount,
+      hasKas: hasKas ?? this.hasKas,
+      kasAmount: kasAmount ?? this.kasAmount,
+      periodType: periodType ?? this.periodType,
+      activePeriodIndex: activePeriodIndex ?? this.activePeriodIndex,
+      members: members ?? this.members,
+      winnerSchedule: winnerSchedule ?? this.winnerSchedule,
+      joinCode: joinCode ?? this.joinCode,
+      memberUserIds: memberUserIds ?? this.memberUserIds,
+      startDate: startDate ?? this.startDate,
+      kasExpenses: kasExpenses ?? this.kasExpenses,
+    );
+  }
+
   // Total period count dynamically equals total members count
   int get totalPeriods => members.isNotEmpty ? members.length : 1;
 
