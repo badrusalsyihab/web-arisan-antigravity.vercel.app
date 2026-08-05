@@ -27,6 +27,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   bool _isLoading = false;
   GroupModel? _foundGroup;
   String? _selectedMemberId;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -43,33 +44,32 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Future<void> _searchGroup() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan kode kelompok')));
+      setState(() => _errorMessage = 'Masukkan 6 karakter kode kelompok');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     
     final group = await _firebaseService.getGroupByJoinCode(code);
     
     if (group == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kelompok tidak ditemukan')));
-      }
       setState(() {
         _foundGroup = null;
         _isLoading = false;
+        _errorMessage = 'Kelompok dengan kode tersebut tidak ditemukan';
       });
       return;
     }
 
     final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
     if (group.memberUserIds.contains(userId)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Anda sudah bergabung di kelompok ini')));
-      }
       setState(() {
         _foundGroup = null;
         _isLoading = false;
+        _errorMessage = 'Anda sudah bergabung di kelompok ini';
       });
       return;
     }
@@ -84,7 +84,10 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Future<void> _joinGroup() async {
     if (_foundGroup == null || _selectedMemberId == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
     final success = await _firebaseService.joinGroup(_foundGroup!.id, _selectedMemberId!, userId);
@@ -97,17 +100,20 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
         Navigator.pop(context);
       }
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok')));
-      }
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal bergabung ke kelompok, silakan coba lagi';
+      });
     }
   }
 
   Future<void> _joinAsNewMember() async {
     if (_foundGroup == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
     final success = await _firebaseService.joinGroupAsNewMember(_foundGroup!.id, userId, widget.currentUser.name);
@@ -119,10 +125,10 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
         Navigator.pop(context);
       }
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok sebagai anggota baru')));
-      }
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal bergabung ke kelompok sebagai anggota baru';
+      });
     }
   }
 
@@ -174,6 +180,29 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                 ),
               ],
             ),
+            
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             if (_foundGroup != null) ...[
               const SizedBox(height: 32),
