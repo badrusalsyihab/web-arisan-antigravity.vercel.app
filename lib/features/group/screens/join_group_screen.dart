@@ -43,7 +43,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Future<void> _searchGroup() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) {
-      /* ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan kode kelompok'))); */
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Masukkan kode kelompok')));
       return;
     }
 
@@ -53,7 +53,19 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     
     if (group == null) {
       if (mounted) {
-        /* ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kelompok tidak ditemukan'))); */
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kelompok tidak ditemukan')));
+      }
+      setState(() {
+        _foundGroup = null;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
+    if (group.memberUserIds.contains(userId)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Anda sudah bergabung di kelompok ini')));
       }
       setState(() {
         _foundGroup = null;
@@ -86,7 +98,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
       }
     } else {
       if (mounted) {
-        /* ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok'))); */
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok')));
       }
       setState(() => _isLoading = false);
     }
@@ -108,7 +120,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
       }
     } else {
       if (mounted) {
-        /* ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok sebagai anggota baru'))); */
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal bergabung ke kelompok sebagai anggota baru')));
       }
       setState(() => _isLoading = false);
     }
