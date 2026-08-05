@@ -23,18 +23,22 @@ class GalleryDetailScreen extends StatefulWidget {
 
 class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
   final ScrollController _scrollController = ScrollController();
-  
+
   List<Map<String, dynamic>> _items = [];
   DocumentSnapshot? _lastDoc;
   bool _isLoading = false;
   bool _hasMore = true;
+  bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
     _fetchGallery();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoading && _hasMore) {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoading &&
+          _hasMore) {
         _fetchGallery();
       }
     });
@@ -48,7 +52,7 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
 
   Future<void> _fetchGallery() async {
     if (_isLoading || !_hasMore) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -82,15 +86,15 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
         if (!validExts.contains(ext)) return;
 
         final bytes = await image.readAsBytes();
-        
+
         final sizeInBytes = bytes.lengthInBytes;
         final sizeInMB = sizeInBytes / (1024 * 1024);
         if (sizeInMB > 15) return;
 
         setState(() {
-          _isLoading = true;
+          _isUploading = true;
         });
-        
+
         final imgbbService = ImgbbService();
         final result = await imgbbService.uploadImage(
           photoTitle: image.name,
@@ -107,16 +111,34 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
           _hasMore = true;
           _fetchGallery();
         } else {
-           setState(() {
-             _isLoading = false;
-           });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _isUploading = false;
+          });
         }
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
   }
 
@@ -136,8 +158,12 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  child: item.containsKey('url') && item['url'].toString().isNotEmpty
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  child:
+                      item.containsKey('url') &&
+                          item['url'].toString().isNotEmpty
                       ? Image.network(
                           item['url']!,
                           width: double.infinity,
@@ -148,7 +174,10 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                           height: 200,
                           color: const Color(0xFFF8FAFC),
                           child: Center(
-                            child: Text(item['emoji'] ?? '📸', style: const TextStyle(fontSize: 64)),
+                            child: Text(
+                              item['emoji'] ?? '📸',
+                              style: const TextStyle(fontSize: 64),
+                            ),
                           ),
                         ),
                 ),
@@ -158,19 +187,30 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                     children: [
                       Text(
                         item['title'] ?? '',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textMain,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         item['date'] ?? '',
-                        style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textMuted,
+                        ),
                       ),
-                      if (item['uploadedBy'] != null && item['uploadedBy'].toString().isNotEmpty) ...[
+                      if (item['uploadedBy'] != null &&
+                          item['uploadedBy'].toString().isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           'Diunggah oleh: ${item['uploadedBy']}',
-                          style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.textMuted,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 20),
@@ -181,11 +221,19 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                             backgroundColor: AppTheme.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                           ),
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Tutup', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Tutup',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -206,130 +254,205 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Galeri & Dokumentasi', style: TextStyle(color: AppTheme.textMain, fontSize: 16, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Galeri & Dokumentasi',
+          style: TextStyle(
+            color: AppTheme.textMain,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         iconTheme: const IconThemeData(color: AppTheme.textMain),
         actions: [
           TextButton.icon(
             onPressed: _pickImage,
-            icon: const Icon(Icons.add_a_photo_outlined, size: 18, color: AppTheme.primary),
-            label: const Text('Upload', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+            icon: const Icon(
+              Icons.add_a_photo_outlined,
+              size: 18,
+              color: AppTheme.primary,
+            ),
+            label: const Text(
+              'Upload',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: _items.isEmpty && !_isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.photo_library_outlined, size: 64, color: Colors.black26),
-                  const SizedBox(height: 16),
-                  const Text('Belum ada foto', style: TextStyle(color: Colors.black54, fontSize: 14)),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.add_a_photo_outlined, size: 16, color: AppTheme.limeAccent),
-                    label: const Text('Upload Foto Pertama', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                _items.clear();
-                _lastDoc = null;
-                _hasMore = true;
-                await _fetchGallery();
-              },
-              child: GridView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: _items.length + (_isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _items.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final item = _items[index];
-                  return GestureDetector(
-                    onTap: () => _showImageDetailModal(item),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppTheme.cardBorder),
-                        image: item.containsKey('url') && item['url'].toString().isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(item['url']!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: Stack(
-                        children: [
-                          if (item.containsKey('url') && item['url'].toString().isNotEmpty)
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(18),
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, Colors.black87],
-                                  ),
-                                ),
-                              ),
+      body: Column(
+        children: [
+          if (_isUploading) const LinearProgressIndicator(),
+          Expanded(
+            child: _items.isEmpty && !_isLoading
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.photo_library_outlined,
+                          size: 64,
+                          color: Colors.black26,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Belum ada foto',
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
                             ),
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: _pickImage,
+                          icon: const Icon(
+                            Icons.add_a_photo_outlined,
+                            size: 16,
+                            color: AppTheme.limeAccent,
+                          ),
+                          label: const Text(
+                            'Upload Foto Pertama',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      _items.clear();
+                      _lastDoc = null;
+                      _hasMore = true;
+                      await _fetchGallery();
+                    },
+                    child: GridView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 1.25,
+                          ),
+                      itemCount: _items.length + (_hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _items.length) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final item = _items[index];
+                        return GestureDetector(
+                          onTap: () => _showImageDetailModal(item),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppTheme.cardBorder),
+                              image:
+                                  item.containsKey('url') &&
+                                      item['url'].toString().isNotEmpty
+                                  ? DecorationImage(
+                                      image: NetworkImage(item['url']),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: Stack(
                               children: [
-                                if (!item.containsKey('url') || item['url'].toString().isEmpty) ...[
-                                  Center(child: Text(item['emoji'] ?? '📸', style: const TextStyle(fontSize: 32))),
-                                  const Spacer(),
-                                ],
-                                Text(
-                                  item['title'] ?? '',
-                                  style: TextStyle(
-                                    fontSize: 12, 
-                                    fontWeight: FontWeight.bold, 
-                                    color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white : AppTheme.textMain,
+                                if (item.containsKey('url') &&
+                                    item['url'].toString().isNotEmpty)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.black87,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item['date'] ?? '',
-                                  style: TextStyle(
-                                    fontSize: 10, 
-                                    color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white70 : AppTheme.textMuted,
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (!item.containsKey('url') ||
+                                          item['url'].toString().isEmpty) ...[
+                                        Center(
+                                          child: Text(
+                                            item['emoji'] ?? '📸',
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                            ),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                      ],
+                                      Text(
+                                        item['title'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              item.containsKey('url') &&
+                                                  item['url']
+                                                      .toString()
+                                                      .isNotEmpty
+                                              ? Colors.white
+                                              : AppTheme.textMain,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        item['date'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          color:
+                                              item.containsKey('url') &&
+                                                  item['url']
+                                                      .toString()
+                                                      .isNotEmpty
+                                              ? Colors.white70
+                                              : AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

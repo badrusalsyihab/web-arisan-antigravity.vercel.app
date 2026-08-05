@@ -15,6 +15,7 @@ import 'package:app_arisan_antigravity/features/group/screens/gallery_detail_scr
 import '../../../core/models/user_model.dart';
 import '../../../core/services/firebase_service.dart';
 import '../widgets/kas_expenses_modal.dart';
+
 class DashboardScreen extends StatefulWidget {
   final GroupModel group;
   final UserModel currentUser;
@@ -35,8 +36,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   late int selectedPeriodIndex;
-
-
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -56,8 +56,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _togglePaymentStatus(MemberModel member) {
     if (!widget.group.isAdmin(widget.currentUser.email)) return;
-    
-    final currentStatus = member.paymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
+
+    final currentStatus =
+        member.paymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
     final newStatus = currentStatus == 'LUNAS' ? 'BELUM LUNAS' : 'LUNAS';
 
     final updatedMembers = widget.group.members.map((m) {
@@ -87,7 +88,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _toggleKasPaymentStatus(MemberModel member) {
     if (!widget.group.isAdmin(widget.currentUser.email)) return;
 
-    final currentStatus = member.kasPaymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
+    final currentStatus =
+        member.kasPaymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
     final newStatus = currentStatus == 'LUNAS' ? 'BELUM LUNAS' : 'LUNAS';
 
     final updatedMembers = widget.group.members.map((m) {
@@ -120,7 +122,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Konfirmasi Hapus'),
-        content: Text('Apakah Anda yakin ingin menghapus ${member.name} dari kelompok ini?'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus ${member.name} dari kelompok ini?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -137,8 +141,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _performDelete(MemberModel member) {
-    final updatedMembers = widget.group.members.where((m) => m.id != member.id).toList();
-    final updatedUserIds = widget.group.memberUserIds.where((id) => id != member.userId).toList();
+    final updatedMembers = widget.group.members
+        .where((m) => m.id != member.id)
+        .toList();
+    final updatedUserIds = widget.group.memberUserIds
+        .where((id) => id != member.userId)
+        .toList();
 
     final updatedGroup = GroupModel(
       id: widget.group.id,
@@ -155,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     widget.onGroupUpdated(updatedGroup);
-    
+
     /* ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Anggota ${member.name} berhasil dihapus!'),
@@ -168,10 +176,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Generate new members with reset statuses
     final newMembers = widget.group.members.map((m) {
       final initialPaymentStatuses = {
-        for (int i = 1; i <= widget.group.members.length; i++) i: 'BELUM LUNAS'
+        for (int i = 1; i <= widget.group.members.length; i++) i: 'BELUM LUNAS',
       };
       final initialKasPaymentStatuses = {
-        for (int i = 1; i <= widget.group.members.length; i++) i: 'BELUM LUNAS'
+        for (int i = 1; i <= widget.group.members.length; i++) i: 'BELUM LUNAS',
       };
 
       return MemberModel(
@@ -198,7 +206,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       members: newMembers,
       winnerSchedule: {},
       startDate: DateTime.now(),
-      joinCode: widget.group.joinCode, // Keep the same join code so members stay connected
+      joinCode: widget
+          .group
+          .joinCode, // Keep the same join code so members stay connected
       memberUserIds: widget.group.memberUserIds,
     );
 
@@ -220,42 +230,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final ext = image.name.split('.').last.toLowerCase();
         final validExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
         if (!validExts.contains(ext)) {
-          if (mounted) {
-            /* ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Format tidak didukung! Harus berupa gambar (JPG/PNG/WEBP).'),
-                backgroundColor: AppTheme.warning,
-              ),
-            ); */
-          }
           return;
         }
 
         final bytes = await image.readAsBytes();
-        
+
         // Validasi ukuran maksimal 15MB
         final sizeInBytes = bytes.lengthInBytes;
         final sizeInMB = sizeInBytes / (1024 * 1024);
         if (sizeInMB > 15) {
-          if (mounted) {
-            /* ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Ukuran gambar terlalu besar! Maksimal 15 MB.'),
-                backgroundColor: AppTheme.warning,
-              ),
-            ); */
-          }
           return;
         }
 
         if (mounted) {
-          /* ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mengunggah foto ke ImgBB...'),
-            ),
-          ); */
+          setState(() {
+            _isUploadingImage = true;
+          });
         }
-        
+
         final imgbbService = ImgbbService();
         final result = await imgbbService.uploadImage(
           photoTitle: image.name,
@@ -266,25 +258,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         if (result != null) {
           await FirebaseService().addGalleryPhoto(widget.group.id, result);
+        } else {
           if (mounted) {
-            /* ScaffoldMessenger.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Foto berhasil diunggah!'),
-                backgroundColor: AppTheme.accent,
+                content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+                backgroundColor: Colors.red,
               ),
-            ); */
+            );
           }
+        }
+        if (mounted) {
+          setState(() {
+            _isUploadingImage = false;
+          });
         }
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
       if (mounted) {
-        /* ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengunggah foto: $e'),
-            backgroundColor: AppTheme.warning,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+            backgroundColor: Colors.red,
           ),
-        ); */
+        );
+        setState(() {
+          _isUploadingImage = false;
+        });
       }
     }
   }
@@ -305,7 +306,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                   child: item.containsKey('url')
                       ? Image.network(
                           item['url']!,
@@ -317,7 +320,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           height: 200,
                           color: const Color(0xFFF8FAFC),
                           child: Center(
-                            child: Text(item['emoji']!, style: const TextStyle(fontSize: 64)),
+                            child: Text(
+                              item['emoji']!,
+                              style: const TextStyle(fontSize: 64),
+                            ),
                           ),
                         ),
                 ),
@@ -328,22 +334,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Text(
                         item['title']!,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textMain,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 14, color: AppTheme.textMuted),
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: AppTheme.textMuted,
+                          ),
                           const SizedBox(width: 4),
-                          Text(item['date']!, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(
+                            item['date']!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textMuted,
+                            ),
+                          ),
                           if (item.containsKey('uploadedBy')) ...[
                             const SizedBox(width: 16),
-                            const Icon(Icons.person, size: 14, color: AppTheme.textMuted),
+                            const Icon(
+                              Icons.person,
+                              size: 14,
+                              color: AppTheme.textMuted,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                item['uploadedBy']!, 
-                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                                item['uploadedBy']!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textMuted,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -360,9 +387,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               label: const Text('Tutup'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.textMain,
-                                side: const BorderSide(color: AppTheme.cardBorder),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                side: const BorderSide(
+                                  color: AppTheme.cardBorder,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
@@ -371,7 +404,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 if (item.containsKey('url')) {
-                                  Share.share('Lihat dokumentasi Arisan: ${item['title']} - ${item['url']}');
+                                  Share.share(
+                                    'Lihat dokumentasi Arisan: ${item['title']} - ${item['url']}',
+                                  );
                                 } else {
                                   /* ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Hanya foto asli yang dapat dibagikan.')),
@@ -383,8 +418,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primary,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 elevation: 0,
                               ),
                             ),
@@ -415,155 +454,198 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('➕ Tambah Anggota Baru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-              TextField(
-                controller: nameCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Nama Anggota',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              '➕ Tambah Anggota Baru',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Nama Anggota',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: waCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Nomor WhatsApp (Opsional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: waCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Nomor WhatsApp (Opsional)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 4),
-              const Text('Buat Akun Login (Opsional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 4),
+                const Text(
+                  'Buat Akun Login (Opsional)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textMuted,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: passCtrl,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        actions: [
-            if (isLoading)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CircularProgressIndicator(),
-              )
-            else ...[
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passCtrl,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                onPressed: () async {
-                  final name = nameCtrl.text.trim();
-                  final email = emailCtrl.text.trim();
-                  final pass = passCtrl.text.trim();
-                  if (name.isEmpty) return;
+              ],
+            ),
+            actions: [
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                )
+              else ...[
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () async {
+                    final name = nameCtrl.text.trim();
+                    final email = emailCtrl.text.trim();
+                    final pass = passCtrl.text.trim();
+                    if (name.isEmpty) return;
 
-                  setStateDialog(() => isLoading = true);
+                    setStateDialog(() => isLoading = true);
 
-                  String? authUserId;
-                  String newMemberId = 'm_${DateTime.now().millisecondsSinceEpoch}';
+                    String? authUserId;
+                    String newMemberId =
+                        'm_${DateTime.now().millisecondsSinceEpoch}';
 
-                  // Try to create Firebase Auth user if email & password are provided
-                  if (email.isNotEmpty && pass.isNotEmpty) {
-                    try {
-                      // Create a secondary app to not sign out current admin
-                      FirebaseApp tempApp = await Firebase.initializeApp(
-                        name: 'SecondaryApp_${DateTime.now().millisecondsSinceEpoch}',
-                        options: Firebase.app().options,
-                      );
-                      UserCredential userCredential = await FirebaseAuth.instanceFor(app: tempApp).createUserWithEmailAndPassword(
-                        email: email,
-                        password: pass,
-                      );
-                      authUserId = userCredential.user!.uid;
-                      newMemberId = authUserId; // Use UID as member ID
+                    // Try to create Firebase Auth user if email & password are provided
+                    if (email.isNotEmpty && pass.isNotEmpty) {
+                      try {
+                        // Create a secondary app to not sign out current admin
+                        FirebaseApp tempApp = await Firebase.initializeApp(
+                          name:
+                              'SecondaryApp_${DateTime.now().millisecondsSinceEpoch}',
+                          options: Firebase.app().options,
+                        );
+                        UserCredential userCredential =
+                            await FirebaseAuth.instanceFor(
+                              app: tempApp,
+                            ).createUserWithEmailAndPassword(
+                              email: email,
+                              password: pass,
+                            );
+                        authUserId = userCredential.user!.uid;
+                        newMemberId = authUserId; // Use UID as member ID
 
-                      // Create user document
-                      await FirebaseFirestore.instance.collection('users').doc(authUserId).set({
-                        'name': name,
-                        'email': email,
-                        'role': 'Member',
-                        'createdAt': FieldValue.serverTimestamp(),
-                      });
-                      await tempApp.delete();
-                    } catch (e) {
-                      setStateDialog(() => isLoading = false);
-                      if (context.mounted) {
-                        /* ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat akun: $e'), backgroundColor: AppTheme.warning)); */
+                        // Create user document
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(authUserId)
+                            .set({
+                              'name': name,
+                              'email': email,
+                              'role': 'Member',
+                              'createdAt': FieldValue.serverTimestamp(),
+                            });
+                        await tempApp.delete();
+                      } catch (e) {
+                        setStateDialog(() => isLoading = false);
+                        if (context.mounted) {
+                          /* ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat akun: $e'), backgroundColor: AppTheme.warning)); */
+                        }
+                        return; // Stop if failed to create user
                       }
-                      return; // Stop if failed to create user
                     }
-                  }
 
-                  final newMember = MemberModel(
-                    id: newMemberId,
-                    name: name,
-                    waNumber: waCtrl.text.trim().isNotEmpty ? waCtrl.text.trim() : '0812-0000-0000',
-                    role: 'Member',
-                    isWinner: false,
-                    winPeriodLabel: 'Belum Menang',
-                    userId: authUserId,
-                    paymentStatuses: {
-                      for (int i = 1; i <= (widget.group.members.length + 1); i++) i: 'BELUM LUNAS'
-                    },
-                  );
+                    final newMember = MemberModel(
+                      id: newMemberId,
+                      name: name,
+                      waNumber: waCtrl.text.trim().isNotEmpty
+                          ? waCtrl.text.trim()
+                          : '0812-0000-0000',
+                      role: 'Member',
+                      isWinner: false,
+                      winPeriodLabel: 'Belum Menang',
+                      userId: authUserId,
+                      paymentStatuses: {
+                        for (
+                          int i = 1;
+                          i <= (widget.group.members.length + 1);
+                          i++
+                        )
+                          i: 'BELUM LUNAS',
+                      },
+                    );
 
-                  final updatedMembers = List<MemberModel>.from(widget.group.members)..add(newMember);
-                  final updatedGroup = GroupModel(
-                    id: widget.group.id,
-                    name: widget.group.name,
-                    potAmount: widget.group.potAmount,
-                    hasKas: widget.group.hasKas,
-                    kasAmount: widget.group.kasAmount,
-                    periodType: widget.group.periodType,
-                    activePeriodIndex: widget.group.activePeriodIndex,
-                    members: updatedMembers,
-                    winnerSchedule: widget.group.winnerSchedule,
-                    joinCode: widget.group.joinCode,
-                  );
+                    final updatedMembers = List<MemberModel>.from(
+                      widget.group.members,
+                    )..add(newMember);
+                    final updatedGroup = GroupModel(
+                      id: widget.group.id,
+                      name: widget.group.name,
+                      potAmount: widget.group.potAmount,
+                      hasKas: widget.group.hasKas,
+                      kasAmount: widget.group.kasAmount,
+                      periodType: widget.group.periodType,
+                      activePeriodIndex: widget.group.activePeriodIndex,
+                      members: updatedMembers,
+                      winnerSchedule: widget.group.winnerSchedule,
+                      joinCode: widget.group.joinCode,
+                    );
 
-                  await widget.onGroupUpdated(updatedGroup);
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    /* ScaffoldMessenger.of(context).showSnackBar(
+                    await widget.onGroupUpdated(updatedGroup);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      /* ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Anggota $name berhasil ditambahkan!'),
                         backgroundColor: AppTheme.accent,
                       ),
                     ); */
-                  }
-                },
-                child: const Text('Simpan', style: TextStyle(color: Colors.white)),
-              ),
+                    }
+                  },
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ],
-          ],
-        );
-      },
-    ));
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -571,10 +653,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final group = widget.group;
     final periodLabel = group.getPeriodLabel(selectedPeriodIndex);
 
-    final paidCount = group.members.where((m) => m.paymentStatuses[selectedPeriodIndex] == 'LUNAS').length;
-    final kasPaidCount = group.members.where((m) => m.kasPaymentStatuses[selectedPeriodIndex] == 'LUNAS').length;
+    final paidCount = group.members
+        .where((m) => m.paymentStatuses[selectedPeriodIndex] == 'LUNAS')
+        .length;
+    final kasPaidCount = group.members
+        .where((m) => m.kasPaymentStatuses[selectedPeriodIndex] == 'LUNAS')
+        .length;
     final totalCount = group.members.length;
-    
+
     // Normalize user email to match how it's stored in userId/memberUserIds
     final isAdmin = group.isAdmin(widget.currentUser.email);
 
@@ -629,17 +715,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.grid_view_rounded, color: AppTheme.limeAccent, size: 18),
+                          child: const Icon(
+                            Icons.grid_view_rounded,
+                            color: AppTheme.limeAccent,
+                            size: 18,
+                          ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.limeAccent,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             '$paidCount/$totalCount LUNAS',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.primary),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.primary,
+                            ),
                           ),
                         ),
                       ],
@@ -658,18 +755,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(width: 8),
                         if (group.joinCode.isNotEmpty) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.tag, color: AppTheme.limeAccent, size: 12),
+                                const Icon(
+                                  Icons.tag,
+                                  color: AppTheme.limeAccent,
+                                  size: 12,
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   group.joinCode,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.limeAccent),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.limeAccent,
+                                  ),
                                 ),
                               ],
                             ),
@@ -678,8 +786,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                         GestureDetector(
                           onTap: () {
-                            final inviteUrl = 'https://web-arisan-antigravity.vercel.app/join/${group.id}';
-                            Share.share('Ayo bergabung dengan grup arisan "${group.name}"! Klik link ini untuk masuk:\n$inviteUrl\n\nAtau gunakan kode: ${group.joinCode.isNotEmpty ? group.joinCode : "-"}');
+                            final inviteUrl =
+                                'https://web-arisan-antigravity.vercel.app/join/${group.id}';
+                            Share.share(
+                              'Ayo bergabung dengan grup arisan "${group.name}"! Klik link ini untuk masuk:\n$inviteUrl\n\nAtau gunakan kode: ${group.joinCode.isNotEmpty ? group.joinCode : "-"}',
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(6),
@@ -687,7 +798,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.share_rounded, size: 14, color: AppTheme.limeAccent),
+                            child: const Icon(
+                              Icons.share_rounded,
+                              size: 14,
+                              color: AppTheme.limeAccent,
+                            ),
                           ),
                         ),
                       ],
@@ -695,7 +810,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Pot Pemenang: ${CurrencyFormatter.formatRupiah(group.potAmount)} / ${group.periodType == 'bulanan' ? 'bulan' : 'minggu'}',
-                      style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85)),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
                     ),
                   ],
                 ),
@@ -723,12 +841,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.account_balance_wallet_outlined, color: AppTheme.primary, size: 20),
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: AppTheme.primary,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      const Text('Total Terkumpul', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Total Terkumpul',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(CurrencyFormatter.formatRupiah(paidCount * group.potAmount), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
+                      Text(
+                        CurrencyFormatter.formatRupiah(
+                          paidCount * group.potAmount,
+                        ),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textMain,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -740,8 +878,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     stream: FirebaseService().streamExpenses(group.id),
                     builder: (context, snapshot) {
                       final expenses = snapshot.data ?? [];
-                      final totalExpenses = expenses.fold(0.0, (sum, exp) => sum + (exp['amount'] ?? 0));
-                      
+                      final totalExpenses = expenses.fold(
+                        0.0,
+                        (sum, exp) => sum + (exp['amount'] ?? 0),
+                      );
+
                       // Calculate overall Kas for the modal (Saldo Kas Keseluruhan)
                       int totalKasLunas = 0;
                       for (var m in group.members) {
@@ -749,42 +890,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           if (status == 'LUNAS') totalKasLunas++;
                         }
                       }
-                      final trueTotalKasIn = totalKasLunas * group.kasAmount.toDouble();
-                      
+                      final trueTotalKasIn =
+                          totalKasLunas * group.kasAmount.toDouble();
+
                       // Calculate Kas collected for THIS period to show on the card
-                      final kasCollectedPeriod = kasPaidCount * group.kasAmount.toDouble();
+                      final kasCollectedPeriod =
+                          kasPaidCount * group.kasAmount.toDouble();
 
                       return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppTheme.pastelCream,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.savings_outlined, color: AppTheme.warning, size: 20),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.pastelCream,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  // Arrow icon removed
-                                ],
+                                  child: const Icon(
+                                    Icons.savings_outlined,
+                                    color: AppTheme.warning,
+                                    size: 20,
+                                  ),
+                                ),
+                                // Arrow icon removed
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Kas Terkumpul',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textMuted,
+                                fontWeight: FontWeight.w600,
                               ),
-                              const SizedBox(height: 12),
-                              const Text('Kas Terkumpul', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 2),
-                              Text(CurrencyFormatter.formatRupiah(kasCollectedPeriod), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
-                            ],
-                          ),
-                        );
-                    }
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              CurrencyFormatter.formatRupiah(
+                                kasCollectedPeriod,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textMain,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -808,17 +971,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   onPressed: () {
-                    final textToShare = group.joinCode.isNotEmpty 
+                    final textToShare = group.joinCode.isNotEmpty
                         ? 'Ayo gabung kelompok arisan ${group.name} di Aplikasi Arisan Digital!\n\nKode Kelompok: *${group.joinCode}*\n\nBuka via Web:\nhttps://web-arisan-antigravity.vercel.app/?joinCode=${group.joinCode}'
                         : 'Ayo gabung kelompok arisan ${group.name} di Aplikasi Arisan Digital!\n\nBuka via Web:\nhttps://web-arisan-antigravity.vercel.app/';
-                    SharePlus.instance.share(
-                      ShareParams(
-                        text: textToShare,
-                      ),
-                    );
+                    SharePlus.instance.share(ShareParams(text: textToShare));
                   },
-                  icon: const Icon(Icons.chat, color: Color(0xFF25D366), size: 18),
-                  label: const Text('Invite WA', style: TextStyle(fontWeight: FontWeight.bold)),
+                  icon: const Icon(
+                    Icons.chat,
+                    color: Color(0xFF25D366),
+                    size: 18,
+                  ),
+                  label: const Text(
+                    'Invite WA',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -829,10 +995,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  onPressed: group.isCompleted ? null : () => widget.onNavigateToTab(1),
-                  child: const Text('Spin Roulette', style: TextStyle(fontWeight: FontWeight.bold)),
+                  onPressed: group.isCompleted
+                      ? null
+                      : () => widget.onNavigateToTab(1),
+                  child: const Text(
+                    'Spin Roulette',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -852,7 +1025,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.check_circle, color: Color(0xFF15803D), size: 24),
+                      Icon(
+                        Icons.check_circle,
+                        color: Color(0xFF15803D),
+                        size: 24,
+                      ),
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -871,11 +1048,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       minimumSize: const Size.fromHeight(44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     onPressed: isAdmin ? _startNewCycle : null,
-                    icon: const Icon(Icons.restart_alt, color: Colors.white, size: 18),
-                    label: const Text('Mulai Siklus Baru', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    icon: const Icon(
+                      Icons.restart_alt,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    label: const Text(
+                      'Mulai Siklus Baru',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -890,7 +1079,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.pastelPurple.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: AppTheme.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -898,9 +1089,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Kode Gabung Kelompok', style: TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Kode Gabung Kelompok',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textMuted,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(group.joinCode, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.primary, letterSpacing: 2)),
+                      Text(
+                        group.joinCode,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.primary,
+                          letterSpacing: 2,
+                        ),
+                      ),
                     ],
                   ),
                   IconButton(
@@ -926,38 +1132,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 foregroundColor: AppTheme.textMain,
                 side: const BorderSide(color: AppTheme.cardBorder),
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
-              onPressed: group.isCompleted ? null : () {
-                showDialog(
-                  context: context,
-                  builder: (context) => WinnerOrderModal(
-                    group: group,
-                    onSave: (newSchedule) {
-                      final updatedGroup = GroupModel(
-                        id: group.id,
-                        name: group.name,
-                        potAmount: group.potAmount,
-                        hasKas: group.hasKas,
-                        kasAmount: group.kasAmount,
-                        periodType: group.periodType,
-                        activePeriodIndex: group.activePeriodIndex,
-                        members: group.members,
-                        winnerSchedule: newSchedule,
-                        joinCode: group.joinCode,
-                        memberUserIds: group.memberUserIds,
-                        startDate: group.startDate,
+              onPressed: group.isCompleted
+                  ? null
+                  : () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => WinnerOrderModal(
+                          group: group,
+                          onSave: (newSchedule) {
+                            final updatedGroup = GroupModel(
+                              id: group.id,
+                              name: group.name,
+                              potAmount: group.potAmount,
+                              hasKas: group.hasKas,
+                              kasAmount: group.kasAmount,
+                              periodType: group.periodType,
+                              activePeriodIndex: group.activePeriodIndex,
+                              members: group.members,
+                              winnerSchedule: newSchedule,
+                              joinCode: group.joinCode,
+                              memberUserIds: group.memberUserIds,
+                              startDate: group.startDate,
+                            );
+                            widget.onGroupUpdated(updatedGroup);
+                          },
+                        ),
                       );
-                      widget.onGroupUpdated(updatedGroup);
                     },
-                  ),
-                );
-              },
-              icon: const Icon(Icons.settings_outlined, size: 16, color: AppTheme.textMuted),
+              icon: const Icon(
+                Icons.settings_outlined,
+                size: 16,
+                color: AppTheme.textMuted,
+              ),
               label: const Text(
                 'Atur Urutan Pemenang',
-                style: TextStyle(fontSize: 12, color: AppTheme.textMain, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.textMain,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -986,8 +1207,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Daftar Status Pembayaran', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-                        Text(periodLabel, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Daftar Status Pembayaran',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          periodLabel,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.textMuted,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                     if (!group.isCompleted && isAdmin)
@@ -995,12 +1229,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.primary,
                           side: const BorderSide(color: AppTheme.primary),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: _showAddMemberDialog,
                         icon: const Icon(Icons.person_add_alt_1, size: 14),
-                        label: const Text('Tambah', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        label: const Text(
+                          'Tambah',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -1028,14 +1273,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : AppTheme.textMuted,
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppTheme.textMuted,
                             ),
                           ),
                           selected: isSelected,
                           selectedColor: AppTheme.primary,
                           backgroundColor: const Color(0xFFF1F5F9),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           onSelected: (selected) {
                             if (selected) {
                               setState(() {
@@ -1052,15 +1304,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Member List
                 ...group.members.map((member) {
-                  final payStatus = member.paymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
+                  final payStatus =
+                      member.paymentStatuses[selectedPeriodIndex] ??
+                      'BELUM LUNAS';
                   final isPaid = payStatus == 'LUNAS';
 
-                  final kasPayStatus = member.kasPaymentStatuses[selectedPeriodIndex] ?? 'BELUM LUNAS';
+                  final kasPayStatus =
+                      member.kasPaymentStatuses[selectedPeriodIndex] ??
+                      'BELUM LUNAS';
                   final isKasPaid = kasPayStatus == 'LUNAS';
 
-                  final winnerForPeriod = group.winnerSchedule[selectedPeriodIndex];
+                  final winnerForPeriod =
+                      group.winnerSchedule[selectedPeriodIndex];
                   final isWinner = (winnerForPeriod == member.name);
-                  final canDelete = isAdmin && member.role != 'Admin' && !group.isCompleted && !member.isWinner;
+                  final canDelete =
+                      isAdmin &&
+                      member.role != 'Admin' &&
+                      !group.isCompleted &&
+                      !member.isWinner;
 
                   Widget memberRow = Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -1071,7 +1332,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isWinner ? AppTheme.secondary.withValues(alpha: 0.3) : AppTheme.cardBorder,
+                        color: isWinner
+                            ? AppTheme.secondary.withValues(alpha: 0.3)
+                            : AppTheme.cardBorder,
                       ),
                     ),
                     child: Row(
@@ -1081,10 +1344,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             CircleAvatar(
                               radius: 18,
-                              backgroundColor: isWinner ? AppTheme.secondary : AppTheme.primary,
+                              backgroundColor: isWinner
+                                  ? AppTheme.secondary
+                                  : AppTheme.primary,
                               child: Text(
                                 member.name.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -1093,14 +1361,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 Text(
                                   member.name,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(
                                   isWinner ? '🏆 Pemenang' : member.role,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: isWinner ? AppTheme.secondary : AppTheme.textMuted,
-                                    fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
+                                    color: isWinner
+                                        ? AppTheme.secondary
+                                        : AppTheme.textMuted,
+                                    fontWeight: isWinner
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ],
@@ -1115,21 +1390,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             // Flag 1: Iuran Arisan
                             InkWell(
-                              onTap: (group.isCompleted || !isAdmin) ? null : () => _togglePaymentStatus(member),
+                              onTap: (group.isCompleted || !isAdmin)
+                                  ? null
+                                  : () => _togglePaymentStatus(member),
                               borderRadius: BorderRadius.circular(14),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 5,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isPaid ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                                  color: isPaid
+                                      ? const Color(0xFFDCFCE7)
+                                      : const Color(0xFFFEE2E2),
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: isPaid ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                  border: Border.all(
+                                    color: isPaid
+                                        ? const Color(0xFF86EFAC)
+                                        : const Color(0xFFFCA5A5),
+                                  ),
                                 ),
                                 child: Text(
-                                  isPaid ? '🟢 Arisan: LUNAS' : '🔴 Arisan: BELUM',
+                                  isPaid
+                                      ? '🟢 Arisan: LUNAS'
+                                      : '🔴 Arisan: BELUM',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: isPaid ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                                    color: isPaid
+                                        ? const Color(0xFF15803D)
+                                        : const Color(0xFFB91C1C),
                                   ),
                                 ),
                               ),
@@ -1139,21 +1429,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 6),
                               // Flag 2: Iuran Kas
                               InkWell(
-                                onTap: (group.isCompleted || !isAdmin) ? null : () => _toggleKasPaymentStatus(member),
+                                onTap: (group.isCompleted || !isAdmin)
+                                    ? null
+                                    : () => _toggleKasPaymentStatus(member),
                                 borderRadius: BorderRadius.circular(14),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 5,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isKasPaid ? const Color(0xFFE0F2FE) : const Color(0xFFFFEDD5),
+                                    color: isKasPaid
+                                        ? const Color(0xFFE0F2FE)
+                                        : const Color(0xFFFFEDD5),
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: isKasPaid ? const Color(0xFF7DD3FC) : const Color(0xFFFDBA74)),
+                                    border: Border.all(
+                                      color: isKasPaid
+                                          ? const Color(0xFF7DD3FC)
+                                          : const Color(0xFFFDBA74),
+                                    ),
                                   ),
                                   child: Text(
-                                    isKasPaid ? '🟢 Kas: LUNAS' : '🟠 Kas: BELUM',
+                                    isKasPaid
+                                        ? '🟢 Kas: LUNAS'
+                                        : '🟠 Kas: BELUM',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: isKasPaid ? const Color(0xFF0369A1) : const Color(0xFFC2410C),
+                                      color: isKasPaid
+                                          ? const Color(0xFF0369A1)
+                                          : const Color(0xFFC2410C),
                                     ),
                                   ),
                                 ),
@@ -1219,7 +1524,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
-                      return Center(child: Text('Terjadi kesalahan: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+                      return Center(
+                        child: Text(
+                          'Terjadi kesalahan: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
                     }
 
                     final items = snapshot.data ?? [];
@@ -1230,26 +1540,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('📸 Galeri & Dokumentasi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
+                            const Text(
+                              '📸 Galeri & Dokumentasi',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textMain,
+                              ),
+                            ),
                             if (items.isNotEmpty)
                               TextButton(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (context) => GalleryDetailScreen(
-                                      group: widget.group, 
-                                      currentUser: widget.currentUser,
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => GalleryDetailScreen(
+                                        group: widget.group,
+                                        currentUser: widget.currentUser,
+                                      ),
                                     ),
-                                  ));
+                                  );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: const Text('Detail Galeri', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                                child: const Text(
+                                  'Detail Galeri',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
                               ),
                           ],
                         ),
+                        if (_isUploadingImage) ...[
+                          const SizedBox(height: 14),
+                          const LinearProgressIndicator(
+                            color: AppTheme.primary,
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         if (items.isEmpty)
                           Container(
@@ -1257,21 +1594,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             alignment: Alignment.center,
                             child: Column(
                               children: [
-                                const Icon(Icons.photo_library_outlined, size: 48, color: Colors.black26),
+                                const Icon(
+                                  Icons.photo_library_outlined,
+                                  size: 48,
+                                  color: Colors.black26,
+                                ),
                                 const SizedBox(height: 12),
-                                const Text('Belum ada foto', style: TextStyle(color: Colors.black54, fontSize: 13)),
+                                const Text(
+                                  'Belum ada foto',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 13,
+                                  ),
+                                ),
                                 const SizedBox(height: 20),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                     elevation: 1,
                                   ),
                                   onPressed: _pickImage,
-                                  icon: const Icon(Icons.add_a_photo_outlined, size: 16, color: AppTheme.limeAccent),
-                                  label: const Text('Upload Foto', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                                  icon: const Icon(
+                                    Icons.add_a_photo_outlined,
+                                    size: 16,
+                                    color: AppTheme.limeAccent,
+                                  ),
+                                  label: const Text(
+                                    'Upload Foto',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1280,23 +1642,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 1.25,
-                            ),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 1.25,
+                                ),
                             itemCount: items.length,
                             itemBuilder: (context, index) {
                               final item = items[index];
                               return GestureDetector(
-                                onTap: () => _showImageDetailModal(item.cast<String, String>()),
+                                onTap: () => _showImageDetailModal(
+                                  item.cast<String, String>(),
+                                ),
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF8FAFC),
                                     borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(color: AppTheme.cardBorder),
-                                    image: item.containsKey('url') && item['url'].toString().isNotEmpty
+                                    border: Border.all(
+                                      color: AppTheme.cardBorder,
+                                    ),
+                                    image:
+                                        item.containsKey('url') &&
+                                            item['url'].toString().isNotEmpty
                                         ? DecorationImage(
                                             image: NetworkImage(item['url']),
                                             fit: BoxFit.cover,
@@ -1305,15 +1674,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   child: Stack(
                                     children: [
-                                      if (item.containsKey('url') && item['url'].toString().isNotEmpty)
+                                      if (item.containsKey('url') &&
+                                          item['url'].toString().isNotEmpty)
                                         Positioned.fill(
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(18),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
                                               gradient: const LinearGradient(
                                                 begin: Alignment.topCenter,
                                                 end: Alignment.bottomCenter,
-                                                colors: [Colors.transparent, Colors.black87],
+                                                colors: [
+                                                  Colors.transparent,
+                                                  Colors.black87,
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -1321,19 +1695,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Padding(
                                         padding: const EdgeInsets.all(12),
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            if (!item.containsKey('url') || item['url'].toString().isEmpty) ...[
-                                              Center(child: Text(item['emoji'] ?? '📸', style: const TextStyle(fontSize: 32))),
+                                            if (!item.containsKey('url') ||
+                                                item['url']
+                                                    .toString()
+                                                    .isEmpty) ...[
+                                              Center(
+                                                child: Text(
+                                                  item['emoji'] ?? '📸',
+                                                  style: const TextStyle(
+                                                    fontSize: 32,
+                                                  ),
+                                                ),
+                                              ),
                                               const Spacer(),
                                             ],
                                             Text(
                                               item['title'] ?? '',
                                               style: TextStyle(
-                                                fontSize: 11, 
-                                                fontWeight: FontWeight.bold, 
-                                                color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white : AppTheme.textMain,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    item.containsKey('url') &&
+                                                        item['url']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                    ? Colors.white
+                                                    : AppTheme.textMain,
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -1342,8 +1734,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             Text(
                                               item['date'] ?? '',
                                               style: TextStyle(
-                                                fontSize: 9, 
-                                                color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white70 : AppTheme.textMuted,
+                                                fontSize: 9,
+                                                color:
+                                                    item.containsKey('url') &&
+                                                        item['url']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                    ? Colors.white70
+                                                    : AppTheme.textMuted,
                                               ),
                                             ),
                                           ],
