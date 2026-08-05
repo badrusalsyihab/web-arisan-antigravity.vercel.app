@@ -429,10 +429,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                   ),
                 )
-              : const Text(
-                  'Digital Arisan',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-                ),
+              : const SizedBox.shrink(),
           actions: [
             if (currentGroup != null) ...[
               Builder(
