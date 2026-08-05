@@ -47,3 +47,4 @@ app.*.map.json
 # Credentials
 google-services.json
 GoogleService-Info.plist
+.env

@@ -17,8 +17,11 @@ import 'features/group/screens/no_group_screen.dart';
 import 'features/group/screens/join_group_screen.dart';
 import 'core/services/deep_link_service.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(

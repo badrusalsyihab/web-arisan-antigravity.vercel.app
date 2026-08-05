@@ -1,6 +1,7 @@
 // File generated for Firebase project: arisan-antigravity
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
@@ -31,39 +32,39 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAXq3FSwg_pZd0khb2zTKWiFp8BHtCCJ-k',
-    authDomain: 'arisan-antigravity.firebaseapp.com',
-    projectId: 'arisan-antigravity',
-    storageBucket: 'arisan-antigravity.firebasestorage.app',
-    messagingSenderId: '100428312423',
-    appId: '1:100428312423:web:0b5b1a2f5e10dc58a949c2',
-    measurementId: 'G-6FJQVS7BJM',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY']!,
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    appId: dotenv.env['FIREBASE_APP_ID_WEB']!,
+    measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID']!,
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAXq3FSwg_pZd0khb2zTKWiFp8BHtCCJ-k',
-    appId: '1:100428312423:android:0b5b1a2f5e10dc58a949c2',
-    messagingSenderId: '100428312423',
-    projectId: 'arisan-antigravity',
-    storageBucket: 'arisan-antigravity.firebasestorage.app',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY']!,
+    appId: dotenv.env['FIREBASE_APP_ID_ANDROID']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAXq3FSwg_pZd0khb2zTKWiFp8BHtCCJ-k',
-    appId: '1:100428312423:ios:0b5b1a2f5e10dc58a949c2',
-    messagingSenderId: '100428312423',
-    projectId: 'arisan-antigravity',
-    storageBucket: 'arisan-antigravity.firebasestorage.app',
-    iosBundleId: 'com.example.appArisanAntigravity',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY']!,
+    appId: dotenv.env['FIREBASE_APP_ID_IOS']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    iosBundleId: dotenv.env['FIREBASE_IOS_BUNDLE_ID']!,
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAXq3FSwg_pZd0khb2zTKWiFp8BHtCCJ-k',
-    appId: '1:100428312423:ios:0b5b1a2f5e10dc58a949c2',
-    messagingSenderId: '100428312423',
-    projectId: 'arisan-antigravity',
-    storageBucket: 'arisan-antigravity.firebasestorage.app',
-    iosBundleId: 'com.example.appArisanAntigravity',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY']!,
+    appId: dotenv.env['FIREBASE_APP_ID_IOS']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    iosBundleId: dotenv.env['FIREBASE_IOS_BUNDLE_ID']!,
   );
 }
