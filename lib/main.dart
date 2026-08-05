@@ -71,6 +71,17 @@ class _DigitalArisanAppState extends State<DigitalArisanApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        builder: (context, child) {
+          return Container(
+            color: const Color(0xFFF0F2F5), // Light background for desktop
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: child!,
+              ),
+            ),
+          );
+        },
         home: const Scaffold(
           body: Center(
             child: CircularProgressIndicator(color: AppTheme.primary),
@@ -83,6 +94,17 @@ class _DigitalArisanAppState extends State<DigitalArisanApp> {
       title: 'Digital Arisan',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      builder: (context, child) {
+        return Container(
+          color: const Color(0xFFF0F2F5), // Light background for desktop
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: child!,
+            ),
+          ),
+        );
+      },
       home: _currentUser != null
           ? MainNavigationScreen(
               currentUser: _currentUser!,
