@@ -93,10 +93,4 @@ lib/
 └── main.dart             # Main entry point & Bottom Navigation Bar (4 Tab)
 ```
 
----
 
-## 🔐 Kredensial & Integrasi Terpasang
-
-- **Firebase Project**: `arisan-antigravity`
-- **Google OAuth Client ID**: `224225254785-j0r2s9s61khb18i11jje50rosdt0pe3q.apps.googleusercontent.com`
-- **Google Drive Folder ID**: `1bU-HL9pQHyHyDNn8awxabxrSrVr8_6DI`
