@@ -294,7 +294,7 @@ class FirebaseService {
     }
   }
 
-  // Stream Gallery Photos List
+  // Stream Gallery Photos List (Max 4 for Dashboard)
   Stream<List<Map<String, dynamic>>> streamGallery(String groupId) {
     final db = _db;
     if (db == null) return const Stream.empty();
@@ -304,8 +304,36 @@ class FirebaseService {
         .doc(groupId)
         .collection('gallery')
         .orderBy('createdAt', descending: true)
+        .limit(4)
         .snapshots()
         .map((snap) => snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
+  }
+
+  // Get Gallery Photos Paginated
+  Future<Map<String, dynamic>> getGalleryPaginated(String groupId, {DocumentSnapshot? lastDocument, int limit = 10}) async {
+    try {
+      final db = _db;
+      if (db == null) return {'items': [], 'lastDoc': null};
+
+      var query = db
+          .collection('groups')
+          .doc(groupId)
+          .collection('gallery')
+          .orderBy('createdAt', descending: true)
+          .limit(limit);
+
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
+
+      final snapshot = await query.get();
+      final items = snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id, 'doc': doc}).toList();
+      final lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+
+      return {'items': items, 'lastDoc': lastDoc};
+    } catch (e) {
+      return {'items': [], 'lastDoc': null};
+    }
   }
   // Stream User's Groups
   Stream<List<GroupModel>> streamUserGroups(String userId) {

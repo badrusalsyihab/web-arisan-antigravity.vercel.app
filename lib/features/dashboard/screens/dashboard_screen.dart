@@ -11,7 +11,7 @@ import '../../../core/models/group_model.dart';
 import '../../../core/models/member_model.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../group/widgets/winner_order_modal.dart';
-
+import 'package:app_arisan_antigravity/features/group/screens/gallery_detail_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/firebase_service.dart';
 import '../widgets/kas_expenses_modal.dart';
@@ -1211,27 +1211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('📸 Galeri & Dokumentasi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 1,
-                      ),
-                      onPressed: _pickImage,
-                      icon: const Icon(Icons.add_a_photo_outlined, size: 14, color: AppTheme.limeAccent),
-                      label: const Text('+ Upload Foto', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // 2x2 Photo Grid
+                // 2x2 Photo Grid with Title
                 StreamBuilder<List<Map<String, dynamic>>>(
                   stream: FirebaseService().streamGallery(widget.group.id),
                   builder: (context, snapshot) {
@@ -1242,96 +1222,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       return Center(child: Text('Terjadi kesalahan: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
                     }
 
-                    // Gabungkan foto dari Firebase dengan dummy (sebagai fallback agar terlihat cantik walau kosong)
-                    final firebaseItems = snapshot.data ?? [];
-                    final dummyItems = [
-                      {'emoji': '🌺', 'title': 'Kocokan Periode 1', 'date': '15 Mei 2026'},
-                      {'emoji': '🍱', 'title': 'Makan Bersama RT', 'date': '20 Mei 2026'},
-                      {'emoji': '🎁', 'title': 'Penyerahan Pot Arisan', 'date': '15 Juni 2026'},
-                      {'emoji': '📸', 'title': 'Foto Bersama Anggota', 'date': '10 Juli 2026'},
-                    ];
-                    
-                    final displayItems = [...firebaseItems, ...dummyItems];
-                    // Batasi maksimal 4 item di dashboard agar rapi
-                    final items = displayItems.take(4).toList();
+                    final items = snapshot.data ?? [];
 
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 1.25,
-                      ),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return GestureDetector(
-                          onTap: () => _showImageDetailModal(item.cast<String, String>()),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppTheme.cardBorder),
-                              image: item.containsKey('url') 
-                                  ? DecorationImage(
-                                      image: NetworkImage(item['url']!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            child: Stack(
-                              children: [
-                                if (item.containsKey('url'))
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(18),
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [Colors.transparent, Colors.black87],
-                                        ),
-                                      ),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('📸 Galeri & Dokumentasi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textMain)),
+                            if (items.isNotEmpty)
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(
+                                    builder: (context) => GalleryDetailScreen(
+                                      group: widget.group, 
+                                      currentUser: widget.currentUser,
                                     ),
+                                  ));
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Detail Galeri', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        if (items.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            alignment: Alignment.center,
+                            child: Column(
+                              children: [
+                                const Icon(Icons.photo_library_outlined, size: 48, color: Colors.black26),
+                                const SizedBox(height: 12),
+                                const Text('Belum ada foto', style: TextStyle(color: Colors.black54, fontSize: 13)),
+                                const SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 1,
                                   ),
-                                Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  onPressed: _pickImage,
+                                  icon: const Icon(Icons.add_a_photo_outlined, size: 16, color: AppTheme.limeAccent),
+                                  label: const Text('Upload Foto', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.25,
+                            ),
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return GestureDetector(
+                                onTap: () => _showImageDetailModal(item.cast<String, String>()),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(color: AppTheme.cardBorder),
+                                    image: item.containsKey('url') && item['url'].toString().isNotEmpty
+                                        ? DecorationImage(
+                                            image: NetworkImage(item['url']),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child: Stack(
                                     children: [
-                                      if (!item.containsKey('url')) ...[
-                                        Center(child: Text(item['emoji']!, style: const TextStyle(fontSize: 32))),
-                                        const Spacer(),
-                                      ],
-                                      Text(
-                                        item['title']!,
-                                        style: TextStyle(
-                                          fontSize: 11, 
-                                          fontWeight: FontWeight.bold, 
-                                          color: item.containsKey('url') ? Colors.white : AppTheme.textMain,
+                                      if (item.containsKey('url') && item['url'].toString().isNotEmpty)
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(18),
+                                              gradient: const LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [Colors.transparent, Colors.black87],
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        item['date']!,
-                                        style: TextStyle(
-                                          fontSize: 9, 
-                                          color: item.containsKey('url') ? Colors.white70 : AppTheme.textMuted,
+                                      Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            if (!item.containsKey('url') || item['url'].toString().isEmpty) ...[
+                                              Center(child: Text(item['emoji'] ?? '📸', style: const TextStyle(fontSize: 32))),
+                                              const Spacer(),
+                                            ],
+                                            Text(
+                                              item['title'] ?? '',
+                                              style: TextStyle(
+                                                fontSize: 11, 
+                                                fontWeight: FontWeight.bold, 
+                                                color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white : AppTheme.textMain,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              item['date'] ?? '',
+                                              style: TextStyle(
+                                                fontSize: 9, 
+                                                color: item.containsKey('url') && item['url'].toString().isNotEmpty ? Colors.white70 : AppTheme.textMuted,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                      ],
                     );
                   },
                 ),
