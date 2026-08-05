@@ -149,7 +149,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           return;
         }
       }
-      final latestGroup = await _firebaseService.fetchLatestGroup();
+      final latestGroup = await _firebaseService.fetchLatestGroup(widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_'));
       if (latestGroup != null && mounted) {
         setState(() {
           activeGroup = latestGroup;
@@ -257,7 +257,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               final success = await _firebaseService.deleteGroup(activeGroup!.id);
               if (success) {
                 await UserSession.clearActiveGroupId();
-                final nextGroup = await _firebaseService.fetchLatestGroup();
+                final nextGroup = await _firebaseService.fetchLatestGroup(widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_'));
                 if (mounted) {
                   setState(() {
                     activeGroup = nextGroup;
@@ -489,7 +489,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               const Text('Pilih Kelompok Arisan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
               const SizedBox(height: 14),
               StreamBuilder<List<GroupModel>>(
-                stream: _firebaseService.streamAllGroups(),
+                stream: _firebaseService.streamUserGroups(widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_')),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(color: AppTheme.primary));

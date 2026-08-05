@@ -173,12 +173,12 @@ class FirebaseService {
   }
 
   // Fetch Latest Group created by user or available in Firestore
-  Future<GroupModel?> fetchLatestGroup() async {
+  Future<GroupModel?> fetchLatestGroup(String userId) async {
     try {
       final db = _db;
       if (db == null) return null;
 
-      final snap = await db.collection('groups').limit(1).get();
+      final snap = await db.collection('groups').where('memberUserIds', arrayContains: userId).orderBy('lastUpdated', descending: true).limit(1).get();
       if (snap.docs.isEmpty) return null;
 
       return getGroup(snap.docs.first.id);
@@ -307,12 +307,12 @@ class FirebaseService {
         .snapshots()
         .map((snap) => snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
   }
-  // Stream All Groups (Client-side filtering can be applied if needed)
-  Stream<List<GroupModel>> streamAllGroups() {
+  // Stream User's Groups
+  Stream<List<GroupModel>> streamUserGroups(String userId) {
     final db = _db;
     if (db == null) return const Stream.empty();
 
-    return db.collection('groups').orderBy('lastUpdated', descending: true).snapshots().map((snap) {
+    return db.collection('groups').where('memberUserIds', arrayContains: userId).orderBy('lastUpdated', descending: true).snapshots().map((snap) {
       return snap.docs.map((doc) {
         final data = doc.data();
         List<MemberModel> membersList = [];
