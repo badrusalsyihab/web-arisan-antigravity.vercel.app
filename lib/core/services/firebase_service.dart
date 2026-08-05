@@ -178,10 +178,19 @@ class FirebaseService {
       final db = _db;
       if (db == null) return null;
 
-      final snap = await db.collection('groups').where('memberUserIds', arrayContains: userId).orderBy('lastUpdated', descending: true).limit(1).get();
+      final snap = await db.collection('groups').where('memberUserIds', arrayContains: userId).get();
       if (snap.docs.isEmpty) return null;
 
-      return getGroup(snap.docs.first.id);
+      final docs = snap.docs.toList();
+      docs.sort((a, b) {
+        final dataA = a.data() as Map<String, dynamic>?;
+        final dataB = b.data() as Map<String, dynamic>?;
+        final dateA = dataA != null && dataA['startDate'] != null ? (dataA['startDate'] as dynamic).toDate() : DateTime.now();
+        final dateB = dataB != null && dataB['startDate'] != null ? (dataB['startDate'] as dynamic).toDate() : DateTime.now();
+        return dateB.compareTo(dateA);
+      });
+
+      return getGroup(docs.first.id);
     } catch (e) {
       return null;
     }
@@ -340,8 +349,8 @@ class FirebaseService {
     final db = _db;
     if (db == null) return const Stream.empty();
 
-    return db.collection('groups').where('memberUserIds', arrayContains: userId).orderBy('lastUpdated', descending: true).snapshots().map((snap) {
-      return snap.docs.map((doc) {
+    return db.collection('groups').where('memberUserIds', arrayContains: userId).snapshots().map((snap) {
+      final groups = snap.docs.map((doc) {
         final data = doc.data();
         List<MemberModel> membersList = [];
         if (data['members'] != null && data['members'] is List) {
@@ -395,6 +404,8 @@ class FirebaseService {
             startDate: data['startDate'] != null ? (data['startDate'] as Timestamp).toDate() : null,
           );
       }).toList();
+      groups.sort((a, b) => (b.startDate ?? DateTime.now()).compareTo(a.startDate ?? DateTime.now()));
+      return groups;
     });
   }
 
