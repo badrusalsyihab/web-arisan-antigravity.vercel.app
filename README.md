@@ -21,9 +21,7 @@
 
 ### 📁 3. Google Drive Integration (Drive v3 API)
 - **Google OAuth Sign-In**: Login menggunakan Akun Google resmi (`google_sign_in`).
-- **Upload Otomatis ke Folder Dedicated**: Pengunggahan foto & dokumentasi arisan otomatis diarahkan langsung ke folder Google Drive:
-  - **Nama Folder**: `arisan-antigravity`
-  - **Folder ID**: `1bU-HL9pQHyHyDNn8awxabxrSrVr8_6DI`
+- **Upload Otomatis ke Folder Dedicated**: Pengunggahan foto & dokumentasi arisan otomatis diarahkan langsung ke folder Google Drive khusus aplikasi.
 
 ---
 
