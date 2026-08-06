@@ -1521,34 +1521,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     fontSize: 13,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    elevation: 1,
-                                  ),
-                                  onPressed: _pickImage,
-                                  icon: const Icon(
-                                    Icons.add_a_photo_outlined,
-                                    size: 16,
-                                    color: AppTheme.limeAccent,
-                                  ),
-                                  label: Text(
-                                    AppLocalizations.of(context)!.dashBtnUploadPhoto,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           )
@@ -1667,6 +1639,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               );
                             },
                           ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 1,
+                            ),
+                            onPressed: _pickImage,
+                            icon: const Icon(
+                              Icons.add_a_photo_outlined,
+                              size: 16,
+                              color: AppTheme.limeAccent,
+                            ),
+                            label: Text(
+                              AppLocalizations.of(context)!.dashBtnUploadPhoto,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     );
                   },
