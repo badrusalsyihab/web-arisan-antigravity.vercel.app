@@ -415,7 +415,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ? const Locale('en') 
                   : const Locale('id');
               },
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(24),
               child: ValueListenableBuilder<Locale>(
                 valueListenable: appLocale,
                 builder: (context, locale, child) {
@@ -423,7 +423,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   return Container(
                     decoration: BoxDecoration(
                       color: _isScrolled ? Colors.white.withValues(alpha: 0.2) : AppTheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: _isScrolled ? Colors.white54 : AppTheme.primary.withValues(alpha: 0.3)),
                     ),
                     alignment: Alignment.center,
