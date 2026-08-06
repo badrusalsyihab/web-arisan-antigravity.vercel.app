@@ -6,6 +6,7 @@ import 'package:app_arisan_antigravity/core/models/user_model.dart';
 import 'package:app_arisan_antigravity/core/services/firebase_service.dart';
 import 'package:app_arisan_antigravity/core/services/imgbb_service.dart';
 import 'package:app_arisan_antigravity/core/theme/app_theme.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class GalleryDetailScreen extends StatefulWidget {
   final GroupModel group;
@@ -113,8 +114,8 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.galUploadFailed),
                 backgroundColor: Colors.red,
               ),
             );
@@ -130,8 +131,8 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
       debugPrint('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Maaf gagal upload gambar, silahkan coba lagi'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.galUploadFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -206,7 +207,7 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                           item['uploadedBy'].toString().isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Diunggah oleh: ${item['uploadedBy']}',
+                          '${AppLocalizations.of(context)!.galUploadedBy}${item['uploadedBy']}',
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppTheme.textMuted,
@@ -227,9 +228,9 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                             elevation: 0,
                           ),
                           onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            'Tutup',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.galBtnClose,
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -254,9 +255,9 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Galeri & Dokumentasi',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.galTitle,
+          style: const TextStyle(
             color: AppTheme.textMain,
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -271,9 +272,9 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
               size: 18,
               color: AppTheme.primary,
             ),
-            label: const Text(
-              'Upload',
-              style: TextStyle(
+            label: Text(
+              AppLocalizations.of(context)!.galBtnUpload,
+              style: const TextStyle(
                 color: AppTheme.primary,
                 fontWeight: FontWeight.bold,
               ),
@@ -297,9 +298,9 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                           color: Colors.black26,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Belum ada foto',
-                          style: TextStyle(color: Colors.black54, fontSize: 14),
+                        Text(
+                          AppLocalizations.of(context)!.galEmpty,
+                          style: const TextStyle(color: Colors.black54, fontSize: 14),
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton.icon(
@@ -320,9 +321,9 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
                             size: 16,
                             color: AppTheme.limeAccent,
                           ),
-                          label: const Text(
-                            'Upload Foto Pertama',
-                            style: TextStyle(
+                          label: Text(
+                            AppLocalizations.of(context)!.galBtnFirstUpload,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),

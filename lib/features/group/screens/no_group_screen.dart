@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
 import 'create_group_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NoGroupScreen extends StatelessWidget {
   final UserModel currentUser;
@@ -20,17 +21,17 @@ class NoGroupScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('🔗 Gabung Kelompok Arisan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: Text('🔗 ${AppLocalizations.of(context)!.noGroupJoinTitle}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Masukkan Kode Kelompok atau Tautan Undangan:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+            Text(AppLocalizations.of(context)!.noGroupJoinSubtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
             const SizedBox(height: 10),
             TextField(
               controller: codeCtrl,
               decoration: InputDecoration(
-                hintText: 'Contoh: ARISAN-RT05-2026',
+                hintText: AppLocalizations.of(context)!.noGroupJoinHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -39,7 +40,7 @@ class NoGroupScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text(AppLocalizations.of(context)!.btnCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -57,7 +58,7 @@ class NoGroupScreen extends StatelessWidget {
                 ),
               ); */
             },
-            child: const Text('Gabung', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.btnJoin, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -98,14 +99,14 @@ class NoGroupScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               Text(
-                'Halo, ${currentUser.name}!',
+                AppLocalizations.of(context)!.noGroupGreeting(currentUser.name),
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textMain),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Anda belum memiliki atau bergabung ke kelompok arisan manapun.',
-                style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+              Text(
+                AppLocalizations.of(context)!.noGroupDesc,
+                style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -132,7 +133,7 @@ class NoGroupScreen extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('➕ Buat Kelompok Arisan Baru', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  label: Text('➕ ${AppLocalizations.of(context)!.noGroupCreateBtn}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 12),
@@ -149,7 +150,7 @@ class NoGroupScreen extends StatelessWidget {
                   ),
                   onPressed: () => _showJoinGroupDialog(context),
                   icon: const Icon(Icons.link, size: 18),
-                  label: const Text('🔗 Gabung Kelompok Arisan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  label: Text('🔗 ${AppLocalizations.of(context)!.noGroupJoinBtn}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

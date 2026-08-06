@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WinnerOrderModal extends StatefulWidget {
   final GroupModel group;
@@ -46,18 +47,18 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.settings, color: AppTheme.primary, size: 20),
-                  SizedBox(width: 8),
+                children: [
+                  const Icon(Icons.settings, color: AppTheme.primary, size: 20),
+                  const SizedBox(width: 8),
                   Text(
-                    'Atur Urutan Pemenang',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    AppLocalizations.of(context)!.winModalTitle,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Text(
-                'Jenis Periode: ${widget.group.periodType.toUpperCase()}',
+                '${AppLocalizations.of(context)!.winModalPeriodType}${widget.group.periodType.toUpperCase()}',
                 style: const TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
@@ -95,7 +96,7 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
                       ),
                       if (isPast)
                         Text(
-                          '$currentWinner (Menang)',
+                          '$currentWinner${AppLocalizations.of(context)!.winModalWon}',
                           style: const TextStyle(fontSize: 12, color: AppTheme.accent, fontWeight: FontWeight.bold),
                         )
                       else
@@ -154,12 +155,12 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
                     const SnackBar(content: Text('Urutan pemenang berhasil disimpan!')),
                   ); */
                 },
-                child: const Text('💾 Simpan Urutan Pemenang', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                child: Text(AppLocalizations.of(context)!.winModalBtnSave, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Batal', style: TextStyle(color: AppTheme.textMuted)),
+                child: Text(AppLocalizations.of(context)!.winModalBtnCancel, style: const TextStyle(color: AppTheme.textMuted)),
               ),
             ],
           ),

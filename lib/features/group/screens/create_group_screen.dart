@@ -4,6 +4,7 @@ import '../../../core/models/group_model.dart';
 import '../../../core/models/member_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/utils/currency_formatter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'dart:math';
 
@@ -49,16 +50,16 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buat Kelompok Arisan Baru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.createGroupTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Anda otomatis menjadi Admin/Ketua di kelompok yang Anda buat.',
-              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+            Text(
+              AppLocalizations.of(context)!.createGroupAdminNotice,
+              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
             ),
             const SizedBox(height: 16),
             Container(
@@ -71,12 +72,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nama Kelompok Arisan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.createGroupNameLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      hintText: 'Contoh: Arisan Keluarga Badrus / Arisan RT 05',
+                      hintText: AppLocalizations.of(context)!.createGroupNameHint,
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
@@ -86,7 +87,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  const Text('Nominal Iuran Utama (Rp)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.createGroupPotLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _potController,
@@ -104,7 +105,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  const Text('Periode Pengundian', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.createGroupPeriodLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     initialValue: _periodType,
@@ -116,9 +117,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'bulanan', child: Text('Bulanan (Bulan 1, Bulan 2...)')),
-                      DropdownMenuItem(value: 'mingguan', child: Text('Mingguan (Minggu 1, Minggu 2...)')),
+                    items: [
+                      DropdownMenuItem(value: 'bulanan', child: Text(AppLocalizations.of(context)!.createGroupPeriodMonthly)),
+                      DropdownMenuItem(value: 'mingguan', child: Text(AppLocalizations.of(context)!.createGroupPeriodWeekly)),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _periodType = val);
@@ -129,8 +130,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   // Toggle Kas
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Aktifkan Iuran Kas (Opsional)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Uang kas terpisah dari pot pemenang', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                    title: Text(AppLocalizations.of(context)!.createGroupKasActive, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    subtitle: Text(AppLocalizations.of(context)!.createGroupKasDesc, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                     value: _hasKas,
                     activeThumbColor: AppTheme.accent,
                     onChanged: (val) => setState(() => _hasKas = val),
@@ -138,7 +139,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
                   if (_hasKas) ...[
                     const SizedBox(height: 8),
-                    const Text('Nominal Kas Per Member (Rp)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    Text(AppLocalizations.of(context)!.createGroupKasAmountLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _kasController,
@@ -194,9 +195,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                             id: 'm_${DateTime.now().millisecondsSinceEpoch}',
                             name: widget.currentUser.name,
                             waNumber: widget.currentUser.phone ?? widget.currentUser.email,
-                            role: 'Admin',
+                            role: AppLocalizations.of(context)!.createGroupRoleAdmin,
                             isWinner: false,
-                            winPeriodLabel: 'Belum Menang',
+                            winPeriodLabel: AppLocalizations.of(context)!.createGroupWinnerPending,
                             paymentStatuses: {1: 'BELUM LUNAS'},
                             userId: userId,
                           ),
@@ -206,7 +207,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       widget.onGroupCreated(newGroup);
                       Navigator.pop(context);
                     },
-                    child: const Text('💾 Simpan & Terbitkan Kelompok', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text('💾 ${AppLocalizations.of(context)!.createGroupBtnSave}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ],
               ),

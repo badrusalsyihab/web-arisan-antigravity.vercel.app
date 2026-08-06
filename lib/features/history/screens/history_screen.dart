@@ -6,6 +6,8 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class HistoryScreen extends StatefulWidget {
   final GroupModel group;
 
@@ -39,9 +41,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '💸 Catat Pengeluaran Kas',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textMain),
+                      Text(
+                        AppLocalizations.of(context)!.histAddExpenseTitle,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textMain),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close, size: 20, color: AppTheme.textMuted),
@@ -52,12 +54,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 12),
 
                   // Keterangan Pengeluaran
-                  const Text('Keterangan Pengeluaran', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.histExpenseDesc, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: titleController,
                     decoration: InputDecoration(
-                      hintText: 'Misal: Konsumsi Arisan, Snack, dll',
+                      hintText: AppLocalizations.of(context)!.histExpenseDescHint,
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -70,19 +72,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         borderSide: const BorderSide(color: AppTheme.cardBorder),
                       ),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Wajib diisi' : null,
+                    validator: (v) => v == null || v.trim().isEmpty ? AppLocalizations.of(context)!.histRequiredField : null,
                   ),
                   const SizedBox(height: 14),
 
                   // Jumlah Nominal
-                  const Text('Jumlah Pengeluaran (Rp)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.histExpenseAmount, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [RupiahInputFormatter()],
                     decoration: InputDecoration(
-                      hintText: 'Nominal dalam Rp (contoh: 50.000)',
+                      hintText: AppLocalizations.of(context)!.histExpenseAmountHint,
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -96,9 +98,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Nominal wajib diisi';
+                      if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.histRequiredAmount;
                       final cleanV = v.replaceAll('.', '');
-                      if (double.tryParse(cleanV) == null) return 'Masukkan angka valid';
+                      if (double.tryParse(cleanV) == null) return AppLocalizations.of(context)!.histInvalidAmount;
                       return null;
                     },
                   ),
@@ -136,7 +138,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         }
                       },
                       icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-                      label: const Text('Simpan Pengeluaran Kas', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      label: Text(AppLocalizations.of(context)!.histBtnSaveExpense, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
                 ],
@@ -181,10 +183,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      '📜 History Keuangan & Kas',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textMain),
+                      AppLocalizations.of(context)!.histMainTitle,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textMain),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -204,9 +206,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     onPressed: _showAddExpenseModal,
                     icon: const Icon(Icons.remove_circle_outline, size: 16, color: AppTheme.limeAccent),
-                    label: const Text(
-                      'Keluar Kas',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                    label: Text(
+                      AppLocalizations.of(context)!.histBtnSpend,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ],
@@ -232,15 +234,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ringkasan Saldo Kas Kelompok',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textMain),
+                    Text(
+                      AppLocalizations.of(context)!.histSummaryTitle,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textMain),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Kas Masuk:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                        Text(AppLocalizations.of(context)!.histTotalIn, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
                         Text(
                           '+ ${CurrencyFormatter.formatRupiah(totalKasIn)}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.accent),
@@ -251,7 +253,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Pengeluaran Kas:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                        Text(AppLocalizations.of(context)!.histTotalOut, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
                         Text(
                           '- ${CurrencyFormatter.formatRupiah(totalExpenses)}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.danger),
@@ -265,7 +267,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Saldo Akhir Kas Saat Ini:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                        Text(AppLocalizations.of(context)!.histBalance, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
                         Text(
                           CurrencyFormatter.formatRupiah(netKasBalance),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.primary),
@@ -296,11 +298,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Audit History Per Periode', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-                        Text('Full Audit Log', style: TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
+                        Text(AppLocalizations.of(context)!.histAuditTitle, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                        Text(AppLocalizations.of(context)!.histAuditSub, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -309,7 +311,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       final pIndex = group.totalPeriods - index; // count backwards from highest period to 1
                       final pLabel = group.getPeriodLabel(pIndex);
                       final isCurrent = pIndex == group.activePeriodIndex;
-                      final winner = group.winnerSchedule[pIndex] ?? 'Menunggu Roulette';
+                      final winner = group.winnerSchedule[pIndex] ?? AppLocalizations.of(context)!.histWaitingRoulette;
 
                       return Container(
                         width: double.infinity,
@@ -346,7 +348,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     border: Border.all(color: pIndex > group.activePeriodIndex ? Colors.transparent : AppTheme.cardBorder),
                                   ),
                                   child: Text(
-                                    isCurrent ? 'PERIODE AKTIF' : (pIndex > group.activePeriodIndex ? 'BELUM MULAI' : 'SELESAI'),
+                                    isCurrent ? AppLocalizations.of(context)!.histActivePeriod : (pIndex > group.activePeriodIndex ? AppLocalizations.of(context)!.histNotStarted : AppLocalizations.of(context)!.histDone),
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
@@ -358,7 +360,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Pot Arisan: Rp ${group.potAmount.toStringAsFixed(0)} • Kas: Rp ${group.kasAmount.toStringAsFixed(0)} / member',
+                              '${AppLocalizations.of(context)!.histPot} Rp ${group.potAmount.toStringAsFixed(0)} • ${AppLocalizations.of(context)!.histKas} Rp ${group.kasAmount.toStringAsFixed(0)} ${AppLocalizations.of(context)!.histPerMember}',
                               style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                             ),
                             const SizedBox(height: 6),
@@ -367,7 +369,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 const Icon(Icons.emoji_events_outlined, size: 16, color: AppTheme.secondary),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Pemenang: $winner',
+                                  '${AppLocalizations.of(context)!.histWinner} $winner',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.secondary,
@@ -398,7 +400,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Daftar Transaksi Pengeluaran Kas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                      Text(AppLocalizations.of(context)!.histTransactionsTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 12),
                       ...kasExpenses.map((expense) {
                         return Container(

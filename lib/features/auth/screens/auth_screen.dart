@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/services/firebase_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AuthScreen extends StatefulWidget {
   final Function(UserModel) onAuthSuccess;
@@ -230,7 +231,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isLoginMode ? 'Masuk ke akun kelompok arisan Anda' : 'Buat akun arisan baru dalam beberapa detik',
+                    isLoginMode ? AppLocalizations.of(context)!.authLoginModeTitle : AppLocalizations.of(context)!.authRegisterModeTitle,
                     style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                     textAlign: TextAlign.center,
                   ),
@@ -256,7 +257,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                'Masuk',
+                                AppLocalizations.of(context)!.authLoginTab,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
@@ -278,7 +279,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                'Daftar Baru',
+                                AppLocalizations.of(context)!.authRegisterTab,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
@@ -298,9 +299,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   if (!isLoginMode) ...[
                     TextFormField(
                       controller: _nameController,
-                      validator: (value) => value == null || value.trim().isEmpty ? 'Nama lengkap wajib diisi' : null,
+                      validator: (value) => value == null || value.trim().isEmpty ? AppLocalizations.of(context)!.authNameReq : null,
                       decoration: InputDecoration(
-                        labelText: 'Nama Lengkap',
+                        labelText: AppLocalizations.of(context)!.authNameLabel,
                         prefixIcon: const Icon(Icons.person_outline, size: 20, color: AppTheme.primary),
                         filled: true,
                         fillColor: const Color(0xFFF8FAFC),
@@ -316,7 +317,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       keyboardType: TextInputType.phone,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
-                        labelText: 'Nomor WhatsApp',
+                        labelText: AppLocalizations.of(context)!.authPhoneLabel,
                         prefixIcon: const Icon(Icons.phone_android_outlined, size: 20, color: AppTheme.primary),
                         filled: true,
                         fillColor: const Color(0xFFF8FAFC),
@@ -333,12 +334,12 @@ class _AuthScreenState extends State<AuthScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) return 'Email wajib diisi';
-                      if (!value.contains('@')) return 'Format email tidak valid';
+                      if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.authEmailReq;
+                      if (!value.contains('@')) return AppLocalizations.of(context)!.authEmailInvalid;
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: 'Alamat Email',
+                      labelText: AppLocalizations.of(context)!.authEmailLabel,
                       prefixIcon: const Icon(Icons.email_outlined, size: 20, color: AppTheme.primary),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
@@ -353,14 +354,14 @@ class _AuthScreenState extends State<AuthScreen> {
                       controller: _passwordController,
                       obscureText: isObscurePassword,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Kata sandi wajib diisi';
-                        if (value.length < 5) return 'Kata sandi minimal 5 karakter';
-                        if (!RegExp(r'\d').hasMatch(value)) return 'Kata sandi harus mengandung angka';
-                        if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) return 'Kata sandi harus mengandung karakter khusus (simbol)';
+                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.authPassReq;
+                        if (value.length < 5) return AppLocalizations.of(context)!.authPassMin;
+                        if (!RegExp(r'\d').hasMatch(value)) return AppLocalizations.of(context)!.authPassNum;
+                        if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) return AppLocalizations.of(context)!.authPassSym;
                         return null;
                       },
                     decoration: InputDecoration(
-                      labelText: 'Kata Sandi',
+                      labelText: AppLocalizations.of(context)!.authPassLabel,
                       prefixIcon: const Icon(Icons.lock_outline, size: 20, color: AppTheme.primary),
                       suffixIcon: IconButton(
                         icon: Icon(isObscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20, color: AppTheme.textMuted),
@@ -390,7 +391,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : Text(
-                              isLoginMode ? 'Masuk ke Aplikasi' : 'Daftar Akun Baru',
+                              isLoginMode ? AppLocalizations.of(context)!.authBtnLogin : AppLocalizations.of(context)!.authBtnRegister,
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                     ),
@@ -403,7 +404,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       Expanded(child: Divider(color: AppTheme.cardBorder)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('atau', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                        child: Text(AppLocalizations.of(context)!.authOr, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                       ),
                       Expanded(child: Divider(color: AppTheme.cardBorder)),
                     ],
@@ -417,9 +418,9 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: OutlinedButton.icon(
                       onPressed: isLoading ? null : _handleGoogleSignIn,
                       icon: const Text('🌐', style: TextStyle(fontSize: 18)),
-                      label: const Text(
-                        'Masuk dengan Akun Google',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                      label: Text(
+                        AppLocalizations.of(context)!.authGoogleSignIn,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppTheme.cardBorder, width: 1.5),

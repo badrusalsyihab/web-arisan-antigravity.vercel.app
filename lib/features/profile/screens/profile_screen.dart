@@ -6,6 +6,7 @@ import '../../../core/services/user_session.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../group/screens/create_group_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel currentUser;
@@ -66,9 +67,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '📱 Edit No. WhatsApp',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textMain),
+                      Text(
+                        AppLocalizations.of(context)!.profEditPhoneTitle,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textMain),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close, size: 20, color: AppTheme.textMuted),
@@ -77,19 +78,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Masukkan nomor WhatsApp aktif Anda agar anggota lain dapat dengan mudah menghubungi Anda untuk konfirmasi iuran.',
-                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                  Text(
+                    AppLocalizations.of(context)!.profEditPhoneDesc,
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                   ),
                   const SizedBox(height: 14),
 
-                  const Text('Nomor WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                  Text(AppLocalizations.of(context)!.profPhoneLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      hintText: 'Contoh: 081234567890',
+                      hintText: AppLocalizations.of(context)!.profPhoneHint,
                       prefixIcon: const Icon(Icons.phone_android_rounded, color: AppTheme.accent, size: 20),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
@@ -99,10 +100,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Nomor WhatsApp wajib diisi';
+                        return AppLocalizations.of(context)!.profPhoneRequired;
                       }
                       if (v.trim().length < 9) {
-                        return 'Nomor WhatsApp tidak valid';
+                        return AppLocalizations.of(context)!.profPhoneInvalid;
                       }
                       return null;
                     },
@@ -147,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       },
                       icon: const Icon(Icons.check_circle, color: Colors.white, size: 18),
-                      label: const Text('Simpan Nomor WhatsApp', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      label: Text(AppLocalizations.of(context)!.profBtnSavePhone, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
                 ],
@@ -172,10 +173,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('👤 Profil Pengguna', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.profTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               IconButton(
                 icon: const Icon(Icons.logout, color: AppTheme.danger),
-                tooltip: 'Keluar / Logout',
+                tooltip: AppLocalizations.of(context)!.profLogoutTooltip,
                 onPressed: widget.onLogout,
               ),
             ],
@@ -259,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          hasPhone ? _user.phone! : 'Tambahkan No. WhatsApp',
+                          hasPhone ? _user.phone! : AppLocalizations.of(context)!.profAddPhone,
                           style: TextStyle(
                             fontSize: 11,
                             color: hasPhone ? AppTheme.accent : AppTheme.warning,
@@ -287,7 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     minimumSize: const Size.fromHeight(40),
                   ),
                   onPressed: widget.onLogout,
-                  child: const Text('Keluar Akun', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text(AppLocalizations.of(context)!.profBtnLogout, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
                 const SizedBox(height: 16),
                 FutureBuilder<PackageInfo>(
@@ -295,7 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Text(
-                        'Versi App: ${snapshot.data!.version} (${snapshot.data!.buildNumber})',
+                        '${AppLocalizations.of(context)!.profAppVersion}${snapshot.data!.version} (${snapshot.data!.buildNumber})',
                         style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
                       );
                     }
@@ -319,11 +320,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Ingin Membuat Arisan Baru?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.profCreateGroupTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                const Text(
-                  'Anda dapat membuat kelompok arisan sendiri dan menjadi Ketua/Admin.',
-                  style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                Text(
+                  AppLocalizations.of(context)!.profCreateGroupDesc,
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
@@ -344,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   },
                   icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                  label: const Text('Buat Kelompok Arisan Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  label: Text(AppLocalizations.of(context)!.profBtnCreateGroup, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ],
             ),

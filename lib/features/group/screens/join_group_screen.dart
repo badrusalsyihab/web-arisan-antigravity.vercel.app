@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class JoinGroupScreen extends StatefulWidget {
   final UserModel currentUser;
@@ -44,7 +45,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Future<void> _searchGroup() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) {
-      setState(() => _errorMessage = 'Masukkan 6 karakter kode kelompok');
+      setState(() => _errorMessage = AppLocalizations.of(context)!.joinGroupErrEmpty);
       return;
     }
 
@@ -59,7 +60,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
       setState(() {
         _foundGroup = null;
         _isLoading = false;
-        _errorMessage = 'Kelompok dengan kode tersebut tidak ditemukan';
+        _errorMessage = AppLocalizations.of(context)!.joinGroupErrNotFound;
       });
       return;
     }
@@ -69,7 +70,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
       setState(() {
         _foundGroup = null;
         _isLoading = false;
-        _errorMessage = 'Anda sudah bergabung di kelompok ini';
+        _errorMessage = AppLocalizations.of(context)!.joinGroupErrAlreadyJoined;
       });
       return;
     }
@@ -102,7 +103,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Gagal bergabung ke kelompok, silakan coba lagi';
+        _errorMessage = AppLocalizations.of(context)!.joinGroupErrFailed;
       });
     }
   }
@@ -127,7 +128,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Gagal bergabung ke kelompok sebagai anggota baru';
+        _errorMessage = AppLocalizations.of(context)!.joinGroupErrFailedNew;
       });
     }
   }
@@ -136,16 +137,16 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gabung Kelompok', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.joinGroupTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Masukkan 6 Karakter Kode Kelompok',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted),
+            Text(
+              AppLocalizations.of(context)!.joinGroupCodeLabel,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted),
             ),
             const SizedBox(height: 8),
             Row(
@@ -157,7 +158,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                     maxLength: 6,
                     decoration: InputDecoration(
                       counterText: '',
-                      hintText: 'Misal: X7K9PQ',
+                      hintText: AppLocalizations.of(context)!.joinGroupCodeHint,
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
@@ -176,7 +177,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                   ),
                   child: _isLoading && _foundGroup == null
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('CARI', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      : Text(AppLocalizations.of(context)!.btnSearch, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ],
             ),
@@ -216,12 +217,12 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Kelompok Ditemukan 🎉', style: TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.joinGroupFoundTitle, style: const TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(_foundGroup!.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
                     const SizedBox(height: 20),
 
-                    const Text('Pilih Nama Anda:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    Text(AppLocalizations.of(context)!.joinGroupSelectName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                     const SizedBox(height: 8),
                     
                     // Dropdown of members who haven't claimed an account (userId == null)
@@ -231,7 +232,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                         fillColor: Colors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
                       ),
-                      hint: const Text('Saya adalah...'),
+                      hint: Text(AppLocalizations.of(context)!.joinGroupDropdownHint),
                       value: _selectedMemberId,
                       items: _foundGroup!.members
                           .where((m) => m.userId == null)
@@ -255,11 +256,11 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                       onPressed: (_isLoading || _selectedMemberId == null) ? null : _joinGroup,
                       child: _isLoading && _foundGroup != null && _selectedMemberId != null
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('✅ Ya, Ini Saya (Gabung)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                          : Text('✅ ${AppLocalizations.of(context)!.joinGroupBtnYes}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                     const SizedBox(height: 16),
-                    const Center(
-                      child: Text('ATAU', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    Center(
+                      child: Text(AppLocalizations.of(context)!.joinGroupOr, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton(
@@ -272,7 +273,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                       onPressed: _isLoading ? null : _joinAsNewMember,
                       child: _isLoading && _foundGroup != null && _selectedMemberId == null
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2))
-                          : const Text('🆕 Daftar sebagai Anggota Baru', style: TextStyle(fontWeight: FontWeight.bold)),
+                          : Text('🆕 ${AppLocalizations.of(context)!.joinGroupBtnNew}', style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

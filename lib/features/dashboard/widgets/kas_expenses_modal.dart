@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/services/firebase_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class KasExpensesModal extends StatefulWidget {
   final String groupId;
@@ -100,7 +101,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
               const SizedBox(height: 12),
               Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
               const SizedBox(height: 16),
-              const Text('Rincian Saldo Kas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
+              Text(AppLocalizations.of(context)!.kasDetailsTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
               const SizedBox(height: 16),
 
               // Summary Box
@@ -119,17 +120,17 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Total Masuk', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(AppLocalizations.of(context)!.kasTotalIn, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                           Text(CurrencyFormatter.formatRupiah(widget.totalKasIn), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
                           const SizedBox(height: 8),
-                          const Text('Total Keluar', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(AppLocalizations.of(context)!.kasTotalOut, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                           Text(CurrencyFormatter.formatRupiah(totalExpenses), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.warning)),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Sisa Saldo Kas', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(AppLocalizations.of(context)!.kasRemaining, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                           Text(CurrencyFormatter.formatRupiah(currentBalance), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: currentBalance >= 0 ? AppTheme.primary : AppTheme.warning)),
                         ],
                       ),
@@ -143,7 +144,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
               // List of Expenses
               Expanded(
                 child: expenses.isEmpty
-                    ? const Center(child: Text('Belum ada riwayat pengeluaran kas.', style: TextStyle(color: AppTheme.textMuted)))
+                    ? Center(child: Text(AppLocalizations.of(context)!.kasEmpty, style: const TextStyle(color: AppTheme.textMuted)))
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         itemCount: expenses.length,
@@ -195,7 +196,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Tambah Pengeluaran Kas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                        Text(AppLocalizations.of(context)!.kasAddExpenseTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary)),
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -204,7 +205,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                               child: TextFormField(
                                 controller: _titleController,
                                 decoration: InputDecoration(
-                                  hintText: 'Keterangan (Makan, dll)',
+                                  hintText: AppLocalizations.of(context)!.kasDescHint,
                                   filled: true,
                                   fillColor: AppTheme.cardBg,
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -220,7 +221,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                                 controller: _amountController,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  hintText: 'Nominal',
+                                  hintText: AppLocalizations.of(context)!.kasAmountHint,
                                   filled: true,
                                   fillColor: AppTheme.cardBg,
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -243,7 +244,7 @@ class _KasExpensesModalState extends State<KasExpensesModal> {
                             onPressed: _isAdding ? null : _submitExpense,
                             child: _isAdding 
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Text('Simpan Pengeluaran', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                                : Text(AppLocalizations.of(context)!.kasBtnSave, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                         ),
                       ],

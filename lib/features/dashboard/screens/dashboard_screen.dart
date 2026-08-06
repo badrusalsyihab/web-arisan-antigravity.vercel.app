@@ -106,19 +106,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Konfirmasi Hapus'),
+        title: Text(AppLocalizations.of(context)!.dashConfirmDeleteTitle),
         content: Text(
-          'Apakah Anda yakin ingin menghapus ${member.name} dari kelompok ini?',
+          AppLocalizations.of(context)!.dashConfirmDeleteBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(AppLocalizations.of(context)!.dashBtnCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.warning),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.dashBtnDelete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -698,7 +698,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '$paidCount/$totalCount LUNAS',
+                            '$paidCount/$totalCount ${AppLocalizations.of(context)!.dashTotalPaid}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
@@ -776,7 +776,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Pot Pemenang: ${CurrencyFormatter.formatRupiah(group.potAmount)} / ${group.periodType == 'bulanan' ? 'bulan' : 'minggu'}',
+                      '${AppLocalizations.of(context)!.dashPotWinner}: ${CurrencyFormatter.formatRupiah(group.potAmount)} / ${group.periodType == 'bulanan' ? AppLocalizations.of(context)!.dashPerMonth : AppLocalizations.of(context)!.dashPerWeek}',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.85),
@@ -815,9 +815,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Total Terkumpul',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.dashTotalCollected,
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.textMuted,
                           fontWeight: FontWeight.w600,
@@ -892,9 +892,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              'Kas Terkumpul',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)!.dashKasCollected,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.textMuted,
                                 fontWeight: FontWeight.w600,
@@ -948,9 +948,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Color(0xFF25D366),
                     size: 18,
                   ),
-                  label: const Text(
-                    'Invite WA',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  label: Text(
+                    AppLocalizations.of(context)!.dashBtnInviteWA,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -979,8 +979,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          '🎉 Arisan Selesai! Semua periode telah diundi.',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.dashArisanCompleted,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF15803D),
@@ -1004,9 +1004,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: Colors.white,
                       size: 18,
                     ),
-                    label: const Text(
-                      'Mulai Siklus Baru',
-                      style: TextStyle(
+                    label: Text(
+                      AppLocalizations.of(context)!.dashBtnNewCycle,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1035,9 +1035,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Kode Gabung Kelompok',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.dashJoinCodeLabel,
+                        style: const TextStyle(
                           fontSize: 11,
                           color: AppTheme.textMuted,
                           fontWeight: FontWeight.bold,
@@ -1108,9 +1108,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   size: 16,
                   color: AppTheme.textMuted,
                 ),
-                label: const Text(
-                  'Atur Urutan Pemenang',
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.dashBtnSetWinnerOrder,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppTheme.textMain,
                     fontWeight: FontWeight.bold,
@@ -1173,8 +1173,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       final periodIndex = index + 1;
                       final isSelected = selectedPeriodIndex == periodIndex;
                       final periodTabTitle = group.periodType == 'bulanan'
-                          ? 'Bulan $periodIndex'
-                          : 'Minggu $periodIndex';
+                          ? '${AppLocalizations.of(context)!.dashMonth} $periodIndex'
+                          : '${AppLocalizations.of(context)!.dashWeek} $periodIndex';
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
@@ -1182,7 +1182,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           checkmarkColor: Colors.white,
                           label: Text(
                             periodIndex == group.activePeriodIndex
-                                ? '$periodTabTitle (Aktif)'
+                                ? '$periodTabTitle ${AppLocalizations.of(context)!.dashActive}'
                                 : periodTabTitle,
                             style: TextStyle(
                               fontSize: 11,
@@ -1281,7 +1281,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                                 Text(
-                                  isWinner ? '🏆 Pemenang' : member.role,
+                                  isWinner ? AppLocalizations.of(context)!.dashWinnerLabel : member.role,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isWinner
@@ -1454,9 +1454,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              '📸 Galeri & Dokumentasi',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)!.dashGalleryTitle,
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.textMain,
@@ -1484,9 +1484,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: const Text(
-                                  'Detail Galeri',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(context)!.dashBtnGalleryDetail,
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.primary,
@@ -1514,9 +1514,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   color: Colors.black26,
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  'Belum ada foto',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.dashGalleryEmpty,
+                                  style: const TextStyle(
                                     color: Colors.black54,
                                     fontSize: 13,
                                   ),
@@ -1541,9 +1541,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     size: 16,
                                     color: AppTheme.limeAccent,
                                   ),
-                                  label: const Text(
-                                    'Upload Foto',
-                                    style: TextStyle(
+                                  label: Text(
+                                    AppLocalizations.of(context)!.dashBtnUploadPhoto,
+                                    style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),

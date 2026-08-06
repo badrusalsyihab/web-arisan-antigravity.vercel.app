@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RouletteScreen extends StatefulWidget {
   final GroupModel group;
@@ -102,7 +103,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
             children: [
               const Text('🎊🏆🎊', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 10),
-              const Text('Selamat Kepada Pemenang!', style: TextStyle(fontSize: 14, color: AppTheme.textMuted)),
+              Text(AppLocalizations.of(context)!.roulCongrats, style: const TextStyle(fontSize: 14, color: AppTheme.textMuted)),
               const SizedBox(height: 8),
               Text(
                 winnerName,
@@ -117,7 +118,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
                   border: Border.all(color: AppTheme.secondary),
                 ),
                 child: Text(
-                  '🏆 PEMENANG ${widget.group.getPeriodLabel(widget.group.activePeriodIndex).toUpperCase()}',
+                  '${AppLocalizations.of(context)!.roulWinner} ${widget.group.getPeriodLabel(widget.group.activePeriodIndex).toUpperCase()}',
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.secondary),
                 ),
               ),
@@ -132,7 +133,7 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
                   widget.onWinnerSelected(winnerName);
                   Navigator.pop(context);
                 },
-                child: const Text('Tutup & Simpan Hasil', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                child: Text(AppLocalizations.of(context)!.roulBtnCloseSave, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ],
           ),
@@ -144,7 +145,11 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final candidates = widget.group.members.where((m) => !m.isWinner).map((m) => m.name).toList();
-    final candidateList = candidates.isEmpty ? ['Semua', 'Sudah', 'Menang'] : candidates;
+    final candidateList = candidates.isEmpty ? [
+      AppLocalizations.of(context)!.roulAll,
+      AppLocalizations.of(context)!.roulAlready,
+      AppLocalizations.of(context)!.roulWon
+    ] : candidates;
     final isAdmin = widget.group.isAdmin(widget.currentUser.email);
 
     return Padding(
@@ -152,11 +157,11 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
       child: Column(
         children: [
           const SizedBox(height: 10),
-          const Text('Kocokan Roulette Arisan 🎯', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          Text(AppLocalizations.of(context)!.roulTitle, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text(
-            'Hanya anggota yang BELUM MENANG yang masuk dalam Roda Roulette.',
-            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+          Text(
+            AppLocalizations.of(context)!.roulDesc,
+            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
@@ -198,16 +203,16 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
             ),
             onPressed: (isSpinning || !isAdmin) ? null : _spinWheel,
             child: isSpinning
-                ? const Row(
+                ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
-                      SizedBox(width: 10),
-                      Text('MEMUTAR ROULETTE...', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                      const SizedBox(width: 10),
+                      Text(AppLocalizations.of(context)!.roulSpinning, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                     ],
                   )
                 : Text(
-                    isAdmin ? 'PUTAR ROULETTE (AKSES KETUA)' : 'HANYA KETUA YANG BISA MEMUTAR',
+                    isAdmin ? AppLocalizations.of(context)!.roulBtnSpinAdmin : AppLocalizations.of(context)!.roulBtnSpinNotAdmin,
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
           ),
