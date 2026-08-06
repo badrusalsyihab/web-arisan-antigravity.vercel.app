@@ -953,27 +953,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  onPressed: group.isCompleted
-                      ? null
-                      : () => widget.onNavigateToTab(1),
-                  child: const Text(
-                    'Spin Roulette',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -1093,46 +1072,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           // Admin Winner Schedule Button
           if (isAdmin) ...[
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.textMain,
-                side: const BorderSide(color: AppTheme.cardBorder),
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Center(
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.textMain,
+                  side: const BorderSide(color: AppTheme.cardBorder),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                onPressed: group.isCompleted
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => WinnerOrderModal(
+                            group: group,
+                            onSave: (newSchedule) {
+                              final updatedGroup = group.copyWith(
+                                winnerSchedule: newSchedule,
+                              );
+                              widget.onGroupUpdated(updatedGroup);
+                            },
+                          ),
+                        );
+                      },
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  size: 16,
+                  color: AppTheme.textMuted,
                 ),
-              ),
-              onPressed: group.isCompleted
-                  ? null
-                  : () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => WinnerOrderModal(
-                          group: group,
-                          onSave: (newSchedule) {
-                            final updatedGroup = group.copyWith(
-                              winnerSchedule: newSchedule,
-                            );
-                            widget.onGroupUpdated(updatedGroup);
-                          },
-                        ),
-                      );
-                    },
-              icon: const Icon(
-                Icons.settings_outlined,
-                size: 16,
-                color: AppTheme.textMuted,
-              ),
-              label: const Text(
-                'Atur Urutan Pemenang',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textMain,
-                  fontWeight: FontWeight.bold,
+                label: const Text(
+                  'Atur Urutan Pemenang',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.textMain,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -1179,29 +1160,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
-                    if (!group.isCompleted && isAdmin)
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.primary,
-                          side: const BorderSide(color: AppTheme.primary),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _showAddMemberDialog,
-                        icon: const Icon(Icons.person_add_alt_1, size: 14),
-                        label: const Text(
-                          'Tambah',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
                 const SizedBox(height: 14),

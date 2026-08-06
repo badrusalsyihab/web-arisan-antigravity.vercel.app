@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../firebase_options.dart';
@@ -313,6 +314,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
                         labelText: 'Nomor WhatsApp',
                         prefixIcon: const Icon(Icons.phone_android_outlined, size: 20, color: AppTheme.primary),
@@ -347,15 +349,16 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Password Field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: isObscurePassword,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Kata sandi wajib diisi';
-                      if (value.length < 6) return 'Kata sandi minimal 6 karakter';
-                      return null;
-                    },
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: isObscurePassword,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Kata sandi wajib diisi';
+                        if (value.length < 5) return 'Kata sandi minimal 5 karakter';
+                        if (!RegExp(r'\d').hasMatch(value)) return 'Kata sandi harus mengandung angka';
+                        if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) return 'Kata sandi harus mengandung karakter khusus (simbol)';
+                        return null;
+                      },
                     decoration: InputDecoration(
                       labelText: 'Kata Sandi',
                       prefixIcon: const Icon(Icons.lock_outline, size: 20, color: AppTheme.primary),
