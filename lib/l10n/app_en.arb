@@ -42,7 +42,7 @@
       }
     }
   },
-  "noGroupDesc": "You haven't created or joined any arisan group yet.",
+  "noGroupDesc": "You haven''t created or joined any arisan group yet.",
   "noGroupCreateBtn": "Create New Arisan Group",
   "noGroupJoinBtn": "Join Arisan Group",
   "createGroupTitle": "Create New Arisan Group",
@@ -54,7 +54,7 @@
   "createGroupPeriodMonthly": "Monthly (Month 1, Month 2...)",
   "createGroupPeriodWeekly": "Weekly (Week 1, Week 2...)",
   "createGroupKasActive": "Enable Kas Contribution (Optional)",
-  "createGroupKasDesc": "Kas money is separated from the winner's pot",
+  "createGroupKasDesc": "Kas money is separated from the winner''s pot",
   "createGroupKasAmountLabel": "Kas Amount Per Member (Rp)",
   "createGroupBtnSave": "Save & Publish Group",
   "createGroupWinnerPending": "Not Yet Won",
