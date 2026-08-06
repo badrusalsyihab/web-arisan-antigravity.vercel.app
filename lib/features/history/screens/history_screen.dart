@@ -80,9 +80,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   TextFormField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    inputFormatters: [RupiahInputFormatter()],
                     decoration: InputDecoration(
-                      hintText: 'Nominal dalam Rp (contoh: 50000)',
+                      hintText: 'Nominal dalam Rp (contoh: 50.000)',
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -97,7 +97,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return 'Nominal wajib diisi';
-                      if (double.tryParse(v) == null) return 'Masukkan angka valid';
+                      final cleanV = v.replaceAll('.', '');
+                      if (double.tryParse(cleanV) == null) return 'Masukkan angka valid';
                       return null;
                     },
                   ),
@@ -115,7 +116,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          final amount = double.parse(amountController.text.trim());
+                          final cleanAmount = amountController.text.trim().replaceAll('.', '');
+                          final amount = double.parse(cleanAmount);
                           
                           // Save to Firestore using FirebaseService
                           await FirebaseService().addKasExpense(widget.group.id, {
