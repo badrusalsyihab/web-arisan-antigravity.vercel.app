@@ -1,17 +1,26 @@
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import '../../main.dart';
 
 class CurrencyFormatter {
   static String formatRupiah(num number) {
-    final str = number.toInt().toString();
-    final regExp = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-    final formatted = str.replaceAllMapped(regExp, (Match m) => '${m[1]}.');
-    return 'Rp $formatted';
+    final locale = appLocale.value.languageCode;
+    final format = NumberFormat.currency(
+      locale: locale,
+      symbol: locale == 'id' ? 'Rp ' : 'IDR ',
+      decimalDigits: 0,
+    );
+    return format.format(number);
   }
 
   static String formatNumberWithDots(num number) {
-    final str = number.toInt().toString();
-    final regExp = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-    return str.replaceAllMapped(regExp, (Match m) => '${m[1]}.');
+    final locale = appLocale.value.languageCode;
+    final format = NumberFormat.currency(
+      locale: locale,
+      symbol: '',
+      decimalDigits: 0,
+    );
+    return format.format(number).trim();
   }
 }
 

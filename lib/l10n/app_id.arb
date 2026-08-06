@@ -1,0 +1,13 @@
+{
+  "@@locale": "id",
+  "appTitle": "Digital Arisan",
+  "navDashboard": "Dashboard",
+  "navRoulette": "Kocokan",
+  "navKas": "Kas",
+  "navProfile": "Profil",
+  "dashboardPaymentStatus": "Daftar Status Pembayaran",
+  "paid": "Lunas",
+  "unpaid": "BELUM",
+  "joinGroupViaCode": "Gabung Kelompok via Kode",
+  "groupSwitcherTitle": "Pilih Kelompok Arisan"
+}

@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appTitle": "Digital Arisan",
+  "navDashboard": "Dashboard",
+  "navRoulette": "Roulette",
+  "navKas": "Fund",
+  "navProfile": "Profile",
+  "dashboardPaymentStatus": "Payment Status List",
+  "paid": "Paid",
+  "unpaid": "UNPAID",
+  "joinGroupViaCode": "Join Group via Code",
+  "groupSwitcherTitle": "Select Arisan Group"
+}

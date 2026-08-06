@@ -15,6 +15,7 @@ import 'package:app_arisan_antigravity/features/group/screens/gallery_detail_scr
 import '../../../core/models/user_model.dart';
 import '../../../core/services/firebase_service.dart';
 import '../widgets/kas_expenses_modal.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
   final GroupModel group;
@@ -1143,9 +1144,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Daftar Status Pembayaran',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context)!.dashboardPaymentStatus,
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
                           ),
@@ -1325,8 +1326,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 child: Text(
                                   isPaid
-                                      ? '🟢 Arisan: LUNAS'
-                                      : '🔴 Arisan: BELUM',
+                                      ? '🟢 Arisan: ${AppLocalizations.of(context)!.paid}'
+                                      : '🔴 Arisan: ${AppLocalizations.of(context)!.unpaid}',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -1364,8 +1365,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   child: Text(
                                     isKasPaid
-                                        ? '🟢 Kas: LUNAS'
-                                        : '🟠 Kas: BELUM',
+                                        ? '🟢 Kas: ${AppLocalizations.of(context)!.paid}'
+                                        : '🟠 Kas: ${AppLocalizations.of(context)!.unpaid}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,

@@ -18,6 +18,10 @@ import 'features/group/screens/join_group_screen.dart';
 import 'core/services/deep_link_service.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+final ValueNotifier<Locale> appLocale = ValueNotifier(const Locale('id'));
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,64 +74,75 @@ class _DigitalArisanAppState extends State<DigitalArisanApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isCheckingSession) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        builder: (context, child) {
-          return Container(
-            color: const Color(0xFFF0F2F5), // Light background for desktop
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: child!,
+    return ValueListenableBuilder<Locale>(
+      valueListenable: appLocale,
+      builder: (context, locale, child) {
+        if (_isCheckingSession) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.lightTheme,
+            builder: (context, child) {
+              return Container(
+                color: const Color(0xFFF0F2F5), // Light background for desktop
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: child!,
+                  ),
+                ),
+              );
+            },
+            home: const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(color: AppTheme.primary),
               ),
             ),
           );
-        },
-        home: const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(color: AppTheme.primary),
-          ),
-        ),
-      );
-    }
+        }
 
-    return MaterialApp(
-      title: 'Digital Arisan',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      builder: (context, child) {
-        return Container(
-          color: const Color(0xFFF0F2F5), // Light background for desktop
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: child!,
-            ),
-          ),
+        return MaterialApp(
+          title: 'Digital Arisan',
+          debugShowCheckedModeBanner: false,
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.lightTheme,
+          builder: (context, child) {
+            return Container(
+              color: const Color(0xFFF0F2F5), // Light background for desktop
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: child!,
+                ),
+              ),
+            );
+          },
+          home: _currentUser != null
+              ? MainNavigationScreen(
+                  currentUser: _currentUser!,
+                  onLogout: () async {
+                    await UserSession.clear();
+                    try {
+                      await FirebaseAuth.instance.signOut();
+                    } catch (_) {}
+                    setState(() {
+                      _currentUser = null;
+                    });
+                  },
+                )
+              : AuthScreen(
+                  onAuthSuccess: (user) {
+                    setState(() {
+                      _currentUser = user;
+                    });
+                  },
+                ),
         );
       },
-      home: _currentUser != null
-          ? MainNavigationScreen(
-              currentUser: _currentUser!,
-              onLogout: () async {
-                await UserSession.clear();
-                try {
-                  await FirebaseAuth.instance.signOut();
-                } catch (_) {}
-                setState(() {
-                  _currentUser = null;
-                });
-              },
-            )
-          : AuthScreen(
-              onAuthSuccess: (user) {
-                setState(() {
-                  _currentUser = user;
-                });
-              },
-            ),
     );
   }
 }
@@ -361,11 +376,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
 
     final List<BottomNavigationBarItem> navItems = [
-      const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Dashboard'),
-      const BottomNavigationBarItem(icon: Icon(Icons.casino_outlined), activeIcon: Icon(Icons.casino), label: 'Kocokan'),
+      BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home), label: AppLocalizations.of(context)!.navDashboard),
+      BottomNavigationBarItem(icon: const Icon(Icons.casino_outlined), activeIcon: const Icon(Icons.casino), label: AppLocalizations.of(context)!.navRoulette),
       if (currentGroup?.hasKas ?? true)
-        const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), activeIcon: Icon(Icons.bar_chart), label: 'Kas'),
-      const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
+        BottomNavigationBarItem(icon: const Icon(Icons.bar_chart_outlined), activeIcon: const Icon(Icons.bar_chart), label: AppLocalizations.of(context)!.navKas),
+      BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: AppLocalizations.of(context)!.navProfile),
     ];
 
     // Ensure _currentIndex is within bounds if the group changed and removed the Kas tab
@@ -391,6 +406,50 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           surfaceTintColor: Colors.transparent,
           elevation: _isScrolled ? 4.0 : 0.0,
           shadowColor: Colors.black.withValues(alpha: 0.2),
+          leadingWidth: 70,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 10.0),
+            child: InkWell(
+              onTap: () {
+                appLocale.value = appLocale.value.languageCode == 'id' 
+                  ? const Locale('en') 
+                  : const Locale('id');
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: ValueListenableBuilder<Locale>(
+                valueListenable: appLocale,
+                builder: (context, locale, child) {
+                  final isId = locale.languageCode == 'id';
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: _isScrolled ? Colors.white.withValues(alpha: 0.2) : AppTheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _isScrolled ? Colors.white54 : AppTheme.primary.withValues(alpha: 0.3)),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isId ? '🇮🇩' : '🇬🇧',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          locale.languageCode.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _isScrolled ? Colors.white : AppTheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              ),
+            ),
+          ),
           title: currentGroup != null
               ? AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -502,7 +561,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Pilih Kelompok Arisan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
+              Text(AppLocalizations.of(context)!.groupSwitcherTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
               const SizedBox(height: 14),
               StreamBuilder<List<GroupModel>>(
                 stream: _firebaseService.streamUserGroups(widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_')),
@@ -545,7 +604,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.group_add, color: Colors.white, size: 20),
-                label: const Text('Gabung Kelompok via Kode', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                label: Text(AppLocalizations.of(context)!.joinGroupViaCode, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accent,
                   minimumSize: const Size.fromHeight(48),
