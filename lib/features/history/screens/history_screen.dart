@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -79,6 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   TextFormField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       hintText: 'Nominal dalam Rp (contoh: 50000)',
                       filled: true,
