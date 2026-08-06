@@ -3,7 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class JoinGroupScreen extends StatefulWidget {
   final UserModel currentUser;

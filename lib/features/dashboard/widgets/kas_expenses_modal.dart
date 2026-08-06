@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/services/firebase_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class KasExpensesModal extends StatefulWidget {
   final String groupId;

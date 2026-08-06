@@ -260,6 +260,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashBtnGalleryDetail => 'Gallery Detail';
 
   @override
+  String get dashGalleryEmpty => 'No photos yet';
+
+  @override
   String get dashBtnUploadPhoto => 'Upload Photo';
 
   @override

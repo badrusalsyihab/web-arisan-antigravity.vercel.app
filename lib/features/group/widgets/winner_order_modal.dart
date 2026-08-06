@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class WinnerOrderModal extends StatefulWidget {
   final GroupModel group;

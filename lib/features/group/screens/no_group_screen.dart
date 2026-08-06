@@ -3,7 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
 import 'create_group_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class NoGroupScreen extends StatelessWidget {
   final UserModel currentUser;

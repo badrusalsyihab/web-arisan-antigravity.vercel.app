@@ -7,7 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/services/firebase_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class AuthScreen extends StatefulWidget {
   final Function(UserModel) onAuthSuccess;
@@ -400,13 +400,13 @@ class _AuthScreenState extends State<AuthScreen> {
 
                   // Divider
                   Row(
-                    children: const [
-                      Expanded(child: Divider(color: AppTheme.cardBorder)),
+                    children: [
+                      const Expanded(child: Divider(color: AppTheme.cardBorder)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),
                         child: Text(AppLocalizations.of(context)!.authOr, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                       ),
-                      Expanded(child: Divider(color: AppTheme.cardBorder)),
+                      const Expanded(child: Divider(color: AppTheme.cardBorder)),
                     ],
                   ),
                   const SizedBox(height: 16),

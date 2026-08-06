@@ -266,6 +266,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get dashBtnGalleryDetail => 'Detail Galeri';
 
   @override
+  String get dashGalleryEmpty => 'Belum ada foto';
+
+  @override
   String get dashBtnUploadPhoto => 'Upload Foto';
 
   @override

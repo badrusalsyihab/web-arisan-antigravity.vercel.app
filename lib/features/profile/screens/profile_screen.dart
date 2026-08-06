@@ -6,7 +6,7 @@ import '../../../core/services/user_session.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../group/screens/create_group_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel currentUser;

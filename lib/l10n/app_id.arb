@@ -88,6 +88,7 @@
   "dashWinnerLabel": "🏆 Pemenang",
   "dashGalleryTitle": "📸 Galeri & Dokumentasi",
   "dashBtnGalleryDetail": "Detail Galeri",
+  "dashGalleryEmpty": "Belum ada foto",
   "dashBtnUploadPhoto": "Upload Foto",
   "histAddExpenseTitle": "💸 Catat Pengeluaran Kas",
   "histExpenseDesc": "Keterangan Pengeluaran",

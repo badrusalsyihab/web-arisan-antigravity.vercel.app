@@ -19,7 +19,7 @@ import 'core/services/deep_link_service.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 final ValueNotifier<Locale> appLocale = ValueNotifier(const Locale('id'));
 

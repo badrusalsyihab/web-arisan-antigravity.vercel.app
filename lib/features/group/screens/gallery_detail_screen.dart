@@ -6,7 +6,7 @@ import 'package:app_arisan_antigravity/core/models/user_model.dart';
 import 'package:app_arisan_antigravity/core/services/firebase_service.dart';
 import 'package:app_arisan_antigravity/core/services/imgbb_service.dart';
 import 'package:app_arisan_antigravity/core/theme/app_theme.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class GalleryDetailScreen extends StatefulWidget {
   final GroupModel group;

@@ -15,7 +15,7 @@ import 'package:app_arisan_antigravity/features/group/screens/gallery_detail_scr
 import '../../../core/models/user_model.dart';
 import '../../../core/services/firebase_service.dart';
 import '../widgets/kas_expenses_modal.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
   final GroupModel group;
@@ -969,9 +969,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: Column(
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.check_circle,
                         color: Color(0xFF15803D),
                         size: 24,

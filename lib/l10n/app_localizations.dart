@@ -584,6 +584,12 @@ abstract class AppLocalizations {
   /// **'Detail Galeri'**
   String get dashBtnGalleryDetail;
 
+  /// No description provided for @dashGalleryEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada foto'**
+  String get dashGalleryEmpty;
+
   /// No description provided for @dashBtnUploadPhoto.
   ///
   /// In id, this message translates to:
