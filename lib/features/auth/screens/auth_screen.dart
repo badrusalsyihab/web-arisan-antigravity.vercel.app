@@ -62,7 +62,7 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _passwordController.text,
         );
       }
-      final user = UserModel(
+      var user = UserModel(
         name: name.isNotEmpty ? name : 'Pengguna Arisan',
         email: email,
         phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
@@ -81,7 +81,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (_) {
       // Fallback
-      final user = UserModel(
+      var user = UserModel(
         name: name.isNotEmpty ? name : 'Badrus Alsyihab',
         email: email.isNotEmpty ? email : 'badrusalsyihab@gmail.com',
         phone: null,
@@ -121,7 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
         debugPrint("Google Sign In popup notice: $e");
       }
 
-      final user = UserModel(
+      var user = UserModel(
         name: userName,
         email: userEmail,
         photoUrl: userPhoto,
@@ -141,7 +141,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (e) {
       debugPrint("Google Sign In handler error: $e");
-      final user = UserModel(
+      var user = UserModel(
         name: 'Badrus Alsyihab',
         email: 'badrusalsyihab@gmail.com',
         phone: null,
