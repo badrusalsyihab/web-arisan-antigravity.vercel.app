@@ -15,11 +15,11 @@ class FirebaseService {
     }
   }
 
-  // Save User Profile to Cloud Firestore
-  Future<void> saveUserProfile(UserModel user) async {
+  // Save User Profile and return the latest UserModel (including isPremium)
+  Future<UserModel> saveUserProfile(UserModel user) async {
     try {
       final db = _db;
-      if (db == null) return;
+      if (db == null) return user;
 
       final docId = user.email.isNotEmpty
           ? user.email.replaceAll('.', '_').replaceAll('@', '_at_')
@@ -33,8 +33,24 @@ class FirebaseService {
         'lastLogin': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       debugPrint("✅ Firestore User Profile $docId saved successfully!");
+
+      // Fetch the latest document to get isPremium status
+      final doc = await db.collection('users').doc(docId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        return UserModel(
+          name: data['name'] ?? user.name,
+          email: data['email'] ?? user.email,
+          photoUrl: data['photoUrl'] == '' ? null : data['photoUrl'],
+          phone: data['phone'] == '' ? null : data['phone'],
+          isPremium: data['isPremium'] ?? false,
+        );
+      }
+      
+      return user;
     } catch (e) {
       debugPrint("❌ Firestore User Profile save error: $e");
+      return user;
     }
   }
 
@@ -196,6 +212,18 @@ class FirebaseService {
     }
   }
 
+  // Get total groups user is part of
+  Future<int> getUserGroupCount(String userId) async {
+    try {
+      final db = _db;
+      if (db == null) return 0;
+      final snap = await db.collection('groups').where('memberUserIds', arrayContains: userId).get();
+      return snap.docs.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   // Save / Sync Group Model to Cloud Firestore
   Future<void> syncGroup(GroupModel group) async {
     try {
@@ -316,6 +344,18 @@ class FirebaseService {
         .limit(4)
         .snapshots()
         .map((snap) => snap.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList());
+  }
+
+  // Get total count of gallery photos for a group
+  Future<int> getGalleryCount(String groupId) async {
+    try {
+      final db = _db;
+      if (db == null) return 0;
+      final snap = await db.collection('groups').doc(groupId).collection('gallery').get();
+      return snap.docs.length;
+    } catch (e) {
+      return 0;
+    }
   }
 
   // Get Gallery Photos Paginated

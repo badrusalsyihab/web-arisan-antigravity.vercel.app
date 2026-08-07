@@ -7,6 +7,7 @@ class _MemorySession {
   static String? email;
   static String? photo;
   static String? phone;
+  static bool isPremium = false;
 }
 
 class UserSession {
@@ -14,6 +15,7 @@ class UserSession {
   static const String _keyEmail = 'user_email';
   static const String _keyPhoto = 'user_photo';
   static const String _keyPhone = 'user_phone';
+  static const String _keyPremium = 'user_premium';
   static const String _keyActiveGroupId = 'active_group_id';
 
   static Future<void> saveActiveGroupId(String groupId) async {
@@ -44,11 +46,13 @@ class UserSession {
     _MemorySession.email = user.email;
     _MemorySession.photo = user.photoUrl;
     _MemorySession.phone = user.phone;
+    _MemorySession.isPremium = user.isPremium;
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyName, user.name);
       await prefs.setString(_keyEmail, user.email);
+      await prefs.setBool(_keyPremium, user.isPremium);
       if (user.photoUrl != null) {
         await prefs.setString(_keyPhoto, user.photoUrl!);
       } else {
@@ -76,6 +80,7 @@ class UserSession {
           email: email,
           photoUrl: prefs.getString(_keyPhoto),
           phone: prefs.getString(_keyPhone),
+          isPremium: prefs.getBool(_keyPremium) ?? false,
         );
       }
     } catch (e) {
@@ -88,6 +93,7 @@ class UserSession {
         email: _MemorySession.email!,
         photoUrl: _MemorySession.photo,
         phone: _MemorySession.phone,
+        isPremium: _MemorySession.isPremium,
       );
     }
 
@@ -99,6 +105,7 @@ class UserSession {
     _MemorySession.email = null;
     _MemorySession.photo = null;
     _MemorySession.phone = null;
+    _MemorySession.isPremium = false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -106,6 +113,7 @@ class UserSession {
       await prefs.remove(_keyEmail);
       await prefs.remove(_keyPhoto);
       await prefs.remove(_keyPhone);
+      await prefs.remove(_keyPremium);
     } catch (e) {
       debugPrint("UserSession clear notice: $e");
     }

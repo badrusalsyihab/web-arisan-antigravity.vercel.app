@@ -67,8 +67,8 @@ class _AuthScreenState extends State<AuthScreen> {
         email: email,
         phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
       );
+      user = await FirebaseService().saveUserProfile(user);
       await UserSession.saveUser(user);
-      await FirebaseService().saveUserProfile(user);
       widget.onAuthSuccess(user);
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -86,8 +86,8 @@ class _AuthScreenState extends State<AuthScreen> {
         email: email.isNotEmpty ? email : 'badrusalsyihab@gmail.com',
         phone: null,
       );
+      user = await FirebaseService().saveUserProfile(user);
       await UserSession.saveUser(user);
-      await FirebaseService().saveUserProfile(user);
       widget.onAuthSuccess(user);
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -127,8 +127,8 @@ class _AuthScreenState extends State<AuthScreen> {
         photoUrl: userPhoto,
         phone: null,
       );
+      user = await FirebaseService().saveUserProfile(user);
       await UserSession.saveUser(user);
-      await FirebaseService().saveUserProfile(user);
 
       if (mounted) {
         /* ScaffoldMessenger.of(context).showSnackBar(
@@ -146,8 +146,8 @@ class _AuthScreenState extends State<AuthScreen> {
         email: 'badrusalsyihab@gmail.com',
         phone: null,
       );
+      user = await FirebaseService().saveUserProfile(user);
       await UserSession.saveUser(user);
-      await FirebaseService().saveUserProfile(user);
 
       if (mounted) {
         /* ScaffoldMessenger.of(context).showSnackBar(

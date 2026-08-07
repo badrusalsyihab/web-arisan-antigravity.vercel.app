@@ -5,6 +5,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../group/screens/create_group_screen.dart';
+import '../../../core/widgets/upgrade_premium_dialog.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
@@ -133,8 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           });
 
                           await UserSession.saveUser(updatedUser);
-                          await FirebaseService().saveUserProfile(updatedUser);
-                          widget.onUserUpdated?.call(updatedUser);
+                          final updatedUserFromFirebase = await FirebaseService().saveUserProfile(updatedUser);
+                          await UserSession.saveUser(updatedUserFromFirebase);
+                          widget.onUserUpdated?.call(updatedUserFromFirebase);
 
                           if (context.mounted) {
                             Navigator.pop(context);
@@ -333,16 +335,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     minimumSize: const Size.fromHeight(44),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreateGroupScreen(
-                          currentUser: _user,
-                          onGroupCreated: widget.onGroupCreated,
+                  onPressed: () async {
+                    if (!_user.isPremium) {
+                      final userId = _user.email.replaceAll('.', '_').replaceAll('@', '_at_');
+                      final groupCount = await FirebaseService().getUserGroupCount(userId);
+                      if (groupCount >= 3) {
+                        if (context.mounted) {
+                          UpgradePremiumDialog.show(
+                            context,
+                            title: 'Batas Grup Tercapai',
+                            message: 'Akun gratis maksimal hanya dapat membuat/bergabung dengan 3 grup arisan. Silakan upgrade ke Premium untuk grup tak terbatas dan fitur lainnya!',
+                          );
+                        }
+                        return;
+                      }
+                    }
+
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CreateGroupScreen(
+                            currentUser: _user,
+                            onGroupCreated: widget.onGroupCreated,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                   icon: const Icon(Icons.add, color: Colors.white, size: 18),
                   label: Text(AppLocalizations.of(context)!.profBtnCreateGroup, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),

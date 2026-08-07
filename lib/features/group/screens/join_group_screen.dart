@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/models/group_model.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/widgets/upgrade_premium_dialog.dart';
 import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class JoinGroupScreen extends StatefulWidget {
@@ -47,6 +48,21 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     if (code.isEmpty) {
       setState(() => _errorMessage = AppLocalizations.of(context)!.joinGroupErrEmpty);
       return;
+    }
+
+    if (!widget.currentUser.isPremium) {
+      final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
+      final groupCount = await _firebaseService.getUserGroupCount(userId);
+      if (groupCount >= 3) {
+        if (mounted) {
+          UpgradePremiumDialog.show(
+            context,
+            title: 'Batas Grup Tercapai',
+            message: 'Akun gratis maksimal hanya dapat membuat/bergabung dengan 3 grup arisan. Silakan upgrade ke Premium untuk grup tak terbatas dan fitur lainnya!',
+          );
+        }
+        return;
+      }
     }
 
     setState(() {

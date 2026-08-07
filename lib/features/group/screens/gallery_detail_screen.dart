@@ -6,6 +6,7 @@ import 'package:app_arisan_antigravity/core/models/user_model.dart';
 import 'package:app_arisan_antigravity/core/services/firebase_service.dart';
 import 'package:app_arisan_antigravity/core/services/imgbb_service.dart';
 import 'package:app_arisan_antigravity/core/theme/app_theme.dart';
+import 'package:app_arisan_antigravity/core/widgets/upgrade_premium_dialog.dart';
 import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
 class GalleryDetailScreen extends StatefulWidget {
@@ -78,6 +79,20 @@ class _GalleryDetailScreenState extends State<GalleryDetailScreen> {
   }
 
   Future<void> _pickImage() async {
+    if (!widget.currentUser.isPremium) {
+      final photoCount = await FirebaseService().getGalleryCount(widget.group.id);
+      if (photoCount >= 20) {
+        if (mounted) {
+          UpgradePremiumDialog.show(
+            context,
+            title: 'Batas Galeri Tercapai',
+            message: 'Akun gratis maksimal hanya dapat mengunggah 20 foto per grup. Silakan upgrade ke Premium untuk menyimpan foto tanpa batas!',
+          );
+        }
+        return;
+      }
+    }
+
     final picker = ImagePicker();
     try {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
