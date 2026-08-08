@@ -237,59 +237,75 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                     const SizedBox(height: 8),
                     Text(_foundGroup!.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
                     const SizedBox(height: 20),
+                    // 1. Unlinked Members
+                    final unlinkedMembers = _foundGroup!.members.where((m) => m.userId == null).toList();
 
-                    Text(AppLocalizations.of(context)!.joinGroupSelectName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
-                    const SizedBox(height: 8),
-                    
-                    // Dropdown of members who haven't claimed an account (userId == null)
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
-                      ),
-                      hint: Text(AppLocalizations.of(context)!.joinGroupDropdownHint),
-                      value: _selectedMemberId,
-                      items: _foundGroup!.members
-                          .where((m) => m.userId == null)
-                          .map((m) => DropdownMenuItem(
+                    if (unlinkedMembers.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Apakah Admin sudah mendaftarkan Anda?',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blue),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Jika nama Anda ada di daftar bawah ini, silakan pilih agar akun Anda terhubung.',
+                              style: TextStyle(fontSize: 12, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
+                              ),
+                              hint: const Text('Pilih nama Anda (Opsional)', style: TextStyle(fontSize: 13)),
+                              value: _selectedMemberId,
+                              items: unlinkedMembers.map((m) => DropdownMenuItem(
                                 value: m.id,
-                                child: Text('${m.name} (${m.waNumber})'),
-                              ))
-                          .toList(),
-                      onChanged: (val) {
-                        setState(() => _selectedMemberId = val);
-                      },
-                    ),
+                                child: Text('${m.name} (${m.waNumber})', style: const TextStyle(fontSize: 14)),
+                              )).toList(),
+                              onChanged: (val) {
+                                setState(() => _selectedMemberId = val);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
-                    const SizedBox(height: 24),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.accent,
-                        minimumSize: const Size.fromHeight(48),
+                        minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
-                      onPressed: (_isLoading || _selectedMemberId == null) ? null : _joinGroup,
-                      child: _isLoading && _foundGroup != null && _selectedMemberId != null
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              if (_selectedMemberId != null) {
+                                _joinGroup();
+                              } else {
+                                _joinAsNewMember();
+                              }
+                            },
+                      child: _isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : Text('✅ ${AppLocalizations.of(context)!.joinGroupBtnYes}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(AppLocalizations.of(context)!.joinGroupOr, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primary,
-                        minimumSize: const Size.fromHeight(48),
-                        side: const BorderSide(color: AppTheme.primary),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: _isLoading ? null : _joinAsNewMember,
-                      child: _isLoading && _foundGroup != null && _selectedMemberId == null
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2))
-                          : Text('🆕 ${AppLocalizations.of(context)!.joinGroupBtnNew}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          : Text(
+                              _selectedMemberId != null ? 'Hubungkan & Gabung' : 'Gabung ke Kelompok',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
+                            ),
                     ),
                   ],
                 ),
