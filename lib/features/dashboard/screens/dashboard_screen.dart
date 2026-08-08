@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -197,9 +199,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       members: newMembers,
       winnerSchedule: {},
       startDate: DateTime.now(),
-      joinCode: widget
-          .group
-          .joinCode, // Keep the same join code so members stay connected
+      joinCode: (() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        final random = Random();
+        return String.fromCharCodes(Iterable.generate(
+          6,
+          (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+        ));
+      })(),
       memberUserIds: widget.group.memberUserIds,
     );
 
