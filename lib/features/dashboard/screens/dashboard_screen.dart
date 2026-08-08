@@ -173,7 +173,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final newGroup = GroupModel(
       id: 'g_${DateTime.now().millisecondsSinceEpoch}',
-      name: '${widget.group.name} (Siklus Baru)',
+      name: (() {
+        String currentName = widget.group.name;
+        if (currentName.endsWith('(Siklus Baru)')) {
+          currentName = currentName.replaceAll(RegExp(r'\s*\(Siklus Baru\)$'), '');
+          return '$currentName (Batch 2)';
+        }
+
+        final match = RegExp(r'\(Batch (\d+)\)$').firstMatch(currentName);
+        if (match != null) {
+          final currentBatch = int.parse(match.group(1)!);
+          final nextBatch = currentBatch + 1;
+          return currentName.replaceFirst(RegExp(r'\(Batch \d+\)$'), '(Batch $nextBatch)');
+        }
+
+        return '$currentName (Batch 2)';
+      })(),
       potAmount: widget.group.potAmount,
       hasKas: widget.group.hasKas,
       kasAmount: widget.group.kasAmount,
