@@ -24,16 +24,18 @@ class JoinGroupScreen extends StatefulWidget {
 
 class _JoinGroupScreenState extends State<JoinGroupScreen> {
   final _codeController = TextEditingController();
+  final _nameController = TextEditingController();
   final _firebaseService = FirebaseService();
 
   bool _isLoading = false;
   GroupModel? _foundGroup;
-  String? _selectedMemberId;
+
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _nameController.text = widget.currentUser.name;
     if (widget.initialJoinCode != null && widget.initialJoinCode!.isNotEmpty) {
       _codeController.text = widget.initialJoinCode!;
       // Delay search slightly to let the UI build first
@@ -41,6 +43,13 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
         _searchGroup();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _nameController.dispose();
+    super.dispose();
   }
 
   Future<void> _searchGroup() async {
@@ -94,38 +103,26 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     setState(() {
       _foundGroup = group;
       _isLoading = false;
-      _selectedMemberId = null; // Reset selection
+
     });
   }
 
-  Future<void> _joinGroup() async {
-    if (_foundGroup == null || _selectedMemberId == null) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
-    final success = await _firebaseService.joinGroup(_foundGroup!.id, _selectedMemberId!, userId);
-
-    if (success) {
-      // Re-fetch the group to get updated members
-      final updatedGroup = await _firebaseService.getGroup(_foundGroup!.id);
-      if (updatedGroup != null && mounted) {
-        widget.onGroupJoined(updatedGroup);
-        Navigator.pop(context);
-      }
-    } else {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = AppLocalizations.of(context)!.joinGroupErrFailed;
-      });
-    }
-  }
-
-  Future<void> _joinAsNewMember() async {
+  Future<void> _joinAsNewMemberWithValidation() async {
     if (_foundGroup == null) return;
+    
+    final inputName = _nameController.text.trim();
+    if (inputName.isEmpty) {
+      setState(() => _errorMessage = 'Nama tidak boleh kosong');
+      return;
+    }
+
+    final nameExists = _foundGroup!.members.any((m) => m.name.toLowerCase() == inputName.toLowerCase());
+    if (nameExists) {
+      setState(() {
+        _errorMessage = 'Nama "$inputName" sudah digunakan di kelompok ini. Silakan gunakan nama lain.';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -133,7 +130,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
     });
 
     final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
-    final success = await _firebaseService.joinGroupAsNewMember(_foundGroup!.id, userId, widget.currentUser.name);
+    final success = await _firebaseService.joinGroupAsNewMember(_foundGroup!.id, userId, inputName);
 
     if (success) {
       final updatedGroup = await _firebaseService.getGroup(_foundGroup!.id);
@@ -237,53 +234,22 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                     const SizedBox(height: 8),
                     Text(_foundGroup!.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
                     const SizedBox(height: 20),
-                    // 1. Unlinked Members
-                    final unlinkedMembers = _foundGroup!.members.where((m) => m.userId == null).toList();
-
-                    if (unlinkedMembers.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue.shade200),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Apakah Admin sudah mendaftarkan Anda?',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blue),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Jika nama Anda ada di daftar bawah ini, silakan pilih agar akun Anda terhubung.',
-                              style: TextStyle(fontSize: 12, color: Colors.black87),
-                            ),
-                            const SizedBox(height: 12),
-                            DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
-                              ),
-                              hint: const Text('Pilih nama Anda (Opsional)', style: TextStyle(fontSize: 13)),
-                              value: _selectedMemberId,
-                              items: unlinkedMembers.map((m) => DropdownMenuItem(
-                                value: m.id,
-                                child: Text('${m.name} (${m.waNumber})', style: const TextStyle(fontSize: 14)),
-                              )).toList(),
-                              onChanged: (val) {
-                                setState(() => _selectedMemberId = val);
-                              },
-                            ),
-                          ],
-                        ),
+                    Text(AppLocalizations.of(context)!.joinGroupSelectName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
+                    const SizedBox(height: 8),
+                    
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Nama Anda di Kelompok Ini',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
                       ),
-                      const SizedBox(height: 24),
-                    ],
+                    ),
+
+                    const SizedBox(height: 24),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -291,20 +257,12 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              if (_selectedMemberId != null) {
-                                _joinGroup();
-                              } else {
-                                _joinAsNewMember();
-                              }
-                            },
+                      onPressed: _isLoading ? null : _joinAsNewMemberWithValidation,
                       child: _isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : Text(
-                              _selectedMemberId != null ? 'Hubungkan & Gabung' : 'Gabung ke Kelompok',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
+                          : const Text(
+                              'Gabung ke Kelompok',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15),
                             ),
                     ),
                   ],
