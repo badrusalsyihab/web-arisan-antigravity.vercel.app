@@ -23,6 +23,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool isObscurePassword = true;
   bool isLoading = false;
   String? _errorMessage;
+  String? _successMessage;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -46,6 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() {
       isLoading = true;
       _errorMessage = null;
+      _successMessage = null;
     });
     await _ensureFirebaseInitialized();
 
@@ -182,6 +184,105 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _showForgotPasswordDialog() async {
+    final resetEmailController = TextEditingController(text: _emailController.text);
+    bool isResetting = false;
+    String? resetError;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateModal) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('Lupa Password', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Masukkan email yang terdaftar untuk menerima link reset password.', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: resetEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email_outlined, size: 20, color: AppTheme.primary),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
+                    ),
+                  ),
+                  if (resetError != null) ...[
+                    const SizedBox(height: 12),
+                    Text(resetError!, style: const TextStyle(color: AppTheme.danger, fontSize: 12)),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: AppTheme.textMuted)),
+                ),
+                ElevatedButton(
+                  onPressed: isResetting ? null : () async {
+                    final email = resetEmailController.text.trim();
+                    if (email.isEmpty || !email.contains('@')) {
+                      setStateModal(() => resetError = 'Masukkan email yang valid.');
+                      return;
+                    }
+
+                    setStateModal(() {
+                      isResetting = true;
+                      resetError = null;
+                    });
+
+                    try {
+                      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        setState(() {
+                          _errorMessage = null;
+                          _successMessage = 'Link reset password telah dikirim ke $email.';
+                        });
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      setStateModal(() {
+                        if (e.code == 'user-not-found') {
+                          resetError = 'Email tidak terdaftar.';
+                        } else {
+                          resetError = e.message ?? 'Terjadi kesalahan.';
+                        }
+                        isResetting = false;
+                      });
+                    } catch (e) {
+                      setStateModal(() {
+                        resetError = 'Terjadi kesalahan.';
+                        isResetting = false;
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: isResetting
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Kirim Link'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -267,7 +368,13 @@ class _AuthScreenState extends State<AuthScreen> {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => setState(() => isLoginMode = true),
+                          onTap: () {
+                            setState(() {
+                              isLoginMode = true;
+                              _errorMessage = null;
+                              _successMessage = null;
+                            });
+                          },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -289,7 +396,13 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => setState(() => isLoginMode = false),
+                          onTap: () {
+                            setState(() {
+                              isLoginMode = false;
+                              _errorMessage = null;
+                              _successMessage = null;
+                            });
+                          },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -393,6 +506,25 @@ class _AuthScreenState extends State<AuthScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
                     ),
                   ),
+                  if (isLoginMode) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _showForgotPasswordDialog,
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Lupa Password?',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
 
                   // Error Message
@@ -413,6 +545,35 @@ class _AuthScreenState extends State<AuthScreen> {
                               _errorMessage!,
                               style: const TextStyle(
                                 color: AppTheme.danger,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Success Message
+                  if (_successMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.accent.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline, color: AppTheme.accent, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _successMessage!,
+                              style: const TextStyle(
+                                color: AppTheme.accent,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
