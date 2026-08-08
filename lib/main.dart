@@ -136,7 +136,9 @@ class _DigitalArisanAppState extends State<DigitalArisanApp> {
                   },
                 )
               : AuthScreen(
-                  onAuthSuccess: (user) {
+                  onAuthSuccess: (user) async {
+                    // Force clearing active group on explicit login so it fetches the newest batch
+                    await UserSession.clearActiveGroupId();
                     setState(() {
                       _currentUser = user;
                     });

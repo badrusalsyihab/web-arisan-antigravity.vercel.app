@@ -114,6 +114,7 @@ class UserSession {
       await prefs.remove(_keyPhoto);
       await prefs.remove(_keyPhone);
       await prefs.remove(_keyPremium);
+      await prefs.remove(_keyActiveGroupId);
     } catch (e) {
       debugPrint("UserSession clear notice: $e");
     }
