@@ -245,11 +245,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       await FirebaseAuth.instance.sendPasswordResetEmail(
                         email: email,
                         actionCodeSettings: ActionCodeSettings(
-                          url: 'https://web-arisan-antigravity.vercel.app',
+                          url: 'https://web-arisan-antigravity.vercel.app/',
                           handleCodeInApp: false,
-                          iOSBundleId: 'com.badrus.digitalarisan',
-                          androidPackageName: 'com.badrus.digitalarisan',
-                          androidInstallApp: false,
                         ),
                       );
                       if (context.mounted) {
