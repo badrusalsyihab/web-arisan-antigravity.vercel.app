@@ -209,25 +209,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           _isLoadingGroup = false;
         });
         
-        // Handle auto-join via deep link after group is resolved
         final pendingCode = DeepLinkService.consumePendingJoinCode();
         if (pendingCode != null && pendingCode.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => JoinGroupScreen(
-                  currentUser: widget.currentUser,
-                  initialJoinCode: pendingCode,
-                  onGroupJoined: (group) {
-                    _onGroupStateUpdated(group);
-                    setState(() {
-                      _currentIndex = 0;
-                    });
-                  },
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => JoinGroupScreen(
+                    currentUser: widget.currentUser,
+                    initialJoinCode: pendingCode,
+                    onGroupJoined: (group) {
+                      _onGroupStateUpdated(group);
+                      setState(() {
+                        _currentIndex = 0;
+                      });
+                    },
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           });
         }
       }

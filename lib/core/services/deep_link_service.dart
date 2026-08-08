@@ -9,8 +9,19 @@ class DeepLinkService {
     if (kIsWeb) {
       try {
         final uri = Uri.base;
+        
+        // Check normal query parameters
         if (uri.queryParameters.containsKey('joinCode')) {
           _pendingJoinCode = uri.queryParameters['joinCode'];
+          return;
+        }
+        
+        // In Flutter Web, query params might get shifted to the fragment (e.g. /#/?joinCode=XYZ)
+        if (uri.hasFragment) {
+          final fragmentUri = Uri.parse(uri.fragment);
+          if (fragmentUri.queryParameters.containsKey('joinCode')) {
+            _pendingJoinCode = fragmentUri.queryParameters['joinCode'];
+          }
         }
       } catch (e) {
         debugPrint('Error parsing deep link: $e');
