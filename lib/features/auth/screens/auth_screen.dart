@@ -242,7 +242,16 @@ class _AuthScreenState extends State<AuthScreen> {
                     });
 
                     try {
-                      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                      await FirebaseAuth.instance.sendPasswordResetEmail(
+                        email: email,
+                        actionCodeSettings: ActionCodeSettings(
+                          url: 'https://web-arisan-antigravity.vercel.app',
+                          handleCodeInApp: false,
+                          iOSBundleId: 'com.badrus.digitalarisan',
+                          androidPackageName: 'com.badrus.digitalarisan',
+                          androidInstallApp: false,
+                        ),
+                      );
                       if (context.mounted) {
                         Navigator.pop(context);
                         setState(() {
@@ -260,8 +269,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         isResetting = false;
                       });
                     } catch (e) {
+                      debugPrint('Password reset error: $e');
                       setStateModal(() {
-                        resetError = 'Terjadi kesalahan.';
+                        resetError = e.toString();
                         isResetting = false;
                       });
                     }
