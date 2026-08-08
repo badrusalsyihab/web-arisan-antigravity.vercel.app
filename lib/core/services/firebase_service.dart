@@ -14,6 +14,17 @@ class FirebaseService {
       return null;
     }
   }
+  // Check if phone number exists in Firestore
+  Future<bool> checkPhoneExists(String phone) async {
+    try {
+      final db = _db;
+      if (db == null) return false;
+      final snap = await db.collection('users').where('phone', isEqualTo: phone).limit(1).get();
+      return snap.docs.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
 
   // Save User Profile and return the latest UserModel (including isPremium)
   Future<UserModel> saveUserProfile(UserModel user) async {

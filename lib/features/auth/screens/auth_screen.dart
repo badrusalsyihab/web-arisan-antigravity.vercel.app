@@ -22,6 +22,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool isLoginMode = true;
   bool isObscurePassword = true;
   bool isLoading = false;
+  String? _errorMessage;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -42,15 +43,30 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _handleEmailAuth() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      _errorMessage = null;
+    });
     await _ensureFirebaseInitialized();
 
     final email = _emailController.text.trim();
     final name = isLoginMode
         ? (email.contains('@') ? email.split('@').first : email)
         : _nameController.text.trim();
+    final phone = _phoneController.text.trim();
 
     try {
+      if (!isLoginMode && phone.isNotEmpty) {
+        final phoneExists = await FirebaseService().checkPhoneExists(phone);
+        if (phoneExists) {
+          setState(() {
+            _errorMessage = 'Nomor WhatsApp sudah digunakan oleh akun lain.';
+            isLoading = false;
+          });
+          return;
+        }
+      }
+
       if (isLoginMode) {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
@@ -65,19 +81,22 @@ class _AuthScreenState extends State<AuthScreen> {
       var user = UserModel(
         name: name.isNotEmpty ? name : 'Pengguna Arisan',
         email: email,
-        phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+        phone: phone.isNotEmpty ? phone : null,
       );
       user = await FirebaseService().saveUserProfile(user);
       await UserSession.saveUser(user);
       widget.onAuthSuccess(user);
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        /* ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message ?? 'Terjadi kesalahan autentikasi'),
-            backgroundColor: AppTheme.danger,
-          ),
-        ); */
+        setState(() {
+          if (e.code == 'email-already-in-use') {
+            _errorMessage = 'Email sudah digunakan oleh akun lain.';
+          } else if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
+            _errorMessage = 'Email atau password salah.';
+          } else {
+            _errorMessage = e.message ?? 'Terjadi kesalahan autentikasi.';
+          }
+        });
       }
     } catch (_) {
       // Fallback
@@ -372,9 +391,37 @@ class _AuthScreenState extends State<AuthScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.cardBorder)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.cardBorder)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
-                    ),
                   ),
                   const SizedBox(height: 20),
+
+                  // Error Message
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.danger.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: AppTheme.danger, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                color: AppTheme.danger,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
 
                   // Submit Button
                   SizedBox(
