@@ -753,8 +753,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                         GestureDetector(
                           onTap: () {
-                            final inviteUrl =
-                                'https://web-arisan-antigravity.vercel.app/join/${group.id}';
+                            final inviteUrl = group.joinCode.isNotEmpty
+                                ? 'https://web-arisan-antigravity.vercel.app/?joinCode=${group.joinCode}'
+                                : 'https://web-arisan-antigravity.vercel.app/';
                             Share.share(
                               'Ayo bergabung dengan grup arisan "${group.name}"! Klik link ini untuk masuk:\n$inviteUrl\n\nAtau gunakan kode: ${group.joinCode.isNotEmpty ? group.joinCode : "-"}',
                             );

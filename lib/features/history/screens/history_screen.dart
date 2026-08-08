@@ -5,6 +5,7 @@ import '../../../core/models/group_model.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import 'package:app_arisan_antigravity/l10n/app_localizations.dart';
 
@@ -418,7 +419,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(expense['title'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
-                                  Text('${expense['period']} • ${expense['date']}', style: const TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+                                  Builder(
+                                    builder: (context) {
+                                      String dateStr = '';
+                                      if (expense['date'] is Timestamp) {
+                                        dateStr = DateFormat('dd MMM yyyy, HH:mm').format((expense['date'] as Timestamp).toDate());
+                                      } else {
+                                        dateStr = expense['date'].toString();
+                                      }
+                                      return Text('${expense['period']} • $dateStr', style: const TextStyle(fontSize: 10, color: AppTheme.textMuted));
+                                    }
+                                  ),
                                 ],
                               ),
                               Text(

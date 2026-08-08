@@ -123,6 +123,7 @@ class _DigitalArisanAppState extends State<DigitalArisanApp> {
           },
           home: _currentUser != null
               ? MainNavigationScreen(
+                  key: ValueKey(_currentUser!.email),
                   currentUser: _currentUser!,
                   onLogout: () async {
                     await UserSession.clear();
