@@ -45,7 +45,7 @@ class PendingApprovalScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.textMain,
                 ),
               ),
               const SizedBox(height: 16),
@@ -54,7 +54,7 @@ class PendingApprovalScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.textMuted,
                   height: 1.5,
                 ),
               ),
