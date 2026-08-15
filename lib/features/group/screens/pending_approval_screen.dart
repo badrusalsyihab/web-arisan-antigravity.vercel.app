@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/models/group_model.dart';
-import '../../core/theme/app_theme.dart';
+import '../../../core/models/group_model.dart';
+import '../../../core/theme/app_theme.dart';
 
 class PendingApprovalScreen extends StatelessWidget {
   final GroupModel group;
@@ -29,17 +29,17 @@ class PendingApprovalScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.hourglass_top_rounded,
                   size: 64,
                   color: AppTheme.primary,
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'Menunggu Persetujuan Admin',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -52,7 +52,7 @@ class PendingApprovalScreen extends StatelessWidget {
               Text(
                 'Anda telah bergabung di kelompok "${group.name}", namun masih menunggu persetujuan dari admin sebelum dapat melihat rincian kelompok.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   color: AppTheme.textSecondary,
                   height: 1.5,
