@@ -46,10 +46,18 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
   void _spinWheel() {
     if (isSpinning) return;
 
-    final candidates = widget.group.members.where((m) => !m.isWinner).toList();
+    final futureScheduledWinners = widget.group.winnerSchedule.entries
+        .where((e) => e.key > widget.group.activePeriodIndex)
+        .map((e) => e.value)
+        .toSet();
+
+    final candidates = widget.group.members
+        .where((m) => !m.isWinner && !futureScheduledWinners.contains(m.name))
+        .toList();
+        
     if (candidates.isEmpty) {
       /* ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seluruh anggota sudah pernah menang pada siklus ini!')),
+        const SnackBar(content: Text('Seluruh anggota sudah pernah menang atau sudah dijadwalkan!')),
       ); */
       return;
     }
@@ -144,7 +152,15 @@ class _RouletteScreenState extends State<RouletteScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final candidates = widget.group.members.where((m) => !m.isWinner).map((m) => m.name).toList();
+    final futureScheduledWinners = widget.group.winnerSchedule.entries
+        .where((e) => e.key > widget.group.activePeriodIndex)
+        .map((e) => e.value)
+        .toSet();
+        
+    final candidates = widget.group.members
+        .where((m) => !m.isWinner && !futureScheduledWinners.contains(m.name))
+        .map((m) => m.name)
+        .toList();
     final candidateList = candidates.isEmpty ? [
       AppLocalizations.of(context)!.roulAll,
       AppLocalizations.of(context)!.roulAlready,

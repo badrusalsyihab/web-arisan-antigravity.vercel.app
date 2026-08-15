@@ -30,8 +30,9 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
   Widget build(BuildContext context) {
     final candidateNames = widget.group.members.map((m) => m.name).toList();
     
-    // Collect all scheduled winners so they can be excluded from other periods
-    final allScheduledWinners = schedule.values.toSet();
+    // Collect all scheduled winners and existing winners so they can be excluded from other periods
+    final allWinners = widget.group.members.where((m) => m.isWinner).map((m) => m.name).toSet();
+    final allScheduledWinners = schedule.values.toSet()..addAll(allWinners);
 
     return Dialog(
       backgroundColor: AppTheme.cardBg,
