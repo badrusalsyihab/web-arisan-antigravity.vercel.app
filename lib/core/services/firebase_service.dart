@@ -155,7 +155,10 @@ class FirebaseService {
       final db = _db;
       if (db == null) return null;
 
-      final snap = await db.collection('groups').where('memberUserIds', arrayContains: userId).get();
+      final snap = await db.collection('groups').where(Filter.or(
+        Filter('memberUserIds', arrayContains: userId),
+        Filter('pendingMemberUserIds', arrayContains: userId)
+      )).get();
       if (snap.docs.isEmpty) return null;
 
       final docs = snap.docs.toList();
@@ -352,7 +355,10 @@ class FirebaseService {
     final db = _db;
     if (db == null) return const Stream.empty();
 
-    return db.collection('groups').where('memberUserIds', arrayContains: userId).snapshots().map((snap) {
+    return db.collection('groups').where(Filter.or(
+      Filter('memberUserIds', arrayContains: userId),
+      Filter('pendingMemberUserIds', arrayContains: userId)
+    )).snapshots().map((snap) {
       final groups = snap.docs.map((doc) {
         final data = doc.data();
         List<MemberModel> membersList = _parseMembersList(data['members']);

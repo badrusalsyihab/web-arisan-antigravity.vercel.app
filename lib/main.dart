@@ -15,6 +15,7 @@ import 'features/history/screens/history_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/group/screens/no_group_screen.dart';
 import 'features/group/screens/join_group_screen.dart';
+import 'features/group/screens/pending_approval_screen.dart';
 import 'core/services/deep_link_service.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -378,6 +379,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         },
       ),
     ];
+
+    final userId = widget.currentUser.email.replaceAll('.', '_').replaceAll('@', '_at_');
+    final isPending = currentGroup != null && 
+        currentGroup.pendingMemberUserIds.contains(userId) && 
+        !currentGroup.memberUserIds.contains(userId);
+
+    if (isPending) {
+      return PendingApprovalScreen(
+        group: currentGroup,
+        onRefresh: () async {
+          setState(() {
+            _isLoadingGroup = true;
+          });
+          await _restoreActiveGroup();
+        },
+      );
+    }
 
     final List<BottomNavigationBarItem> navItems = [
       BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home), label: AppLocalizations.of(context)!.navDashboard),
