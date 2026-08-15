@@ -77,35 +77,8 @@ class FirebaseService {
       final data = snapshot.data()!;
       
       // Parse members sub-collection or array
-      List<MemberModel> membersList = [];
-      if (data['members'] != null && data['members'] is List) {
-        membersList = (data['members'] as List).map((m) {
-          final map = Map<String, dynamic>.from(m as Map);
-          final rawStatuses = map['paymentStatuses'] as Map<String, dynamic>? ?? {};
-          final Map<int, String> parsedStatuses = {};
-          rawStatuses.forEach((key, val) {
-            parsedStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-          });
-
-          final rawKasStatuses = map['kasPaymentStatuses'] as Map<String, dynamic>? ?? {};
-          final Map<int, String> parsedKasStatuses = {};
-          rawKasStatuses.forEach((key, val) {
-            parsedKasStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-          });
-
-          return MemberModel(
-            id: map['id'] ?? '',
-            name: map['name'] ?? '',
-            waNumber: map['waNumber'] ?? '',
-            role: map['role'] ?? 'Member',
-            isWinner: map['isWinner'] ?? false,
-            winPeriodLabel: map['winPeriodLabel'] ?? '',
-            paymentStatuses: parsedStatuses,
-            kasPaymentStatuses: parsedKasStatuses,
-            userId: map['userId'],
-          );
-        }).toList();
-      }
+      List<MemberModel> membersList = _parseMembersList(data['members']);
+      List<MemberModel> pendingMembersList = _parseMembersList(data['pendingMembers']);
 
       // Parse winner schedule
       final Map<int, String> parsedWinners = {};
@@ -127,6 +100,8 @@ class FirebaseService {
         members: membersList,
         joinCode: data['joinCode'] ?? '',
         memberUserIds: List<String>.from(data['memberUserIds'] ?? []),
+        pendingMembers: pendingMembersList,
+        pendingMemberUserIds: List<String>.from(data['pendingMemberUserIds'] ?? []),
         startDate: data['startDate'] != null ? (data['startDate'] as Timestamp).toDate() : null,
       );
     });
@@ -142,35 +117,8 @@ class FirebaseService {
       if (!doc.exists || doc.data() == null) return null;
 
       final data = doc.data()!;
-      List<MemberModel> membersList = [];
-      if (data['members'] != null && data['members'] is List) {
-        membersList = (data['members'] as List).map((m) {
-          final map = Map<String, dynamic>.from(m as Map);
-          final rawStatuses = map['paymentStatuses'] as Map<String, dynamic>? ?? {};
-          final Map<int, String> parsedStatuses = {};
-          rawStatuses.forEach((key, val) {
-            parsedStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-          });
-
-          final rawKasStatuses = map['kasPaymentStatuses'] as Map<String, dynamic>? ?? {};
-          final Map<int, String> parsedKasStatuses = {};
-          rawKasStatuses.forEach((key, val) {
-            parsedKasStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-          });
-
-          return MemberModel(
-            id: map['id'] ?? '',
-            name: map['name'] ?? '',
-            waNumber: map['waNumber'] ?? '',
-            role: map['role'] ?? 'Member',
-            isWinner: map['isWinner'] ?? false,
-            winPeriodLabel: map['winPeriodLabel'] ?? '',
-            paymentStatuses: parsedStatuses,
-            kasPaymentStatuses: parsedKasStatuses,
-            userId: map['userId'],
-          );
-        }).toList();
-      }
+      List<MemberModel> membersList = _parseMembersList(data['members']);
+      List<MemberModel> pendingMembersList = _parseMembersList(data['pendingMembers']);
 
       final Map<int, String> parsedWinners = {};
       if (data['winnerSchedule'] != null && data['winnerSchedule'] is Map) {
@@ -191,6 +139,8 @@ class FirebaseService {
         members: membersList,
         joinCode: data['joinCode'] ?? '',
         memberUserIds: List<String>.from(data['memberUserIds'] ?? []),
+        pendingMembers: pendingMembersList,
+        pendingMemberUserIds: List<String>.from(data['pendingMemberUserIds'] ?? []),
         startDate: data['startDate'] != null ? (data['startDate'] as Timestamp).toDate() : null,
       );
     } catch (e) {
@@ -281,6 +231,8 @@ class FirebaseService {
         'members': membersData,
         'joinCode': group.joinCode,
         'memberUserIds': group.memberUserIds,
+        'pendingMembers': group.pendingMembers.map((m) => _memberToMap(m)).toList(),
+        'pendingMemberUserIds': group.pendingMemberUserIds,
         if (group.startDate != null) 'startDate': Timestamp.fromDate(group.startDate!),
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -403,35 +355,8 @@ class FirebaseService {
     return db.collection('groups').where('memberUserIds', arrayContains: userId).snapshots().map((snap) {
       final groups = snap.docs.map((doc) {
         final data = doc.data();
-        List<MemberModel> membersList = [];
-        if (data['members'] != null && data['members'] is List) {
-          membersList = (data['members'] as List).map((m) {
-            final map = Map<String, dynamic>.from(m as Map);
-            final rawStatuses = map['paymentStatuses'] as Map<String, dynamic>? ?? {};
-            final Map<int, String> parsedStatuses = {};
-            rawStatuses.forEach((key, val) {
-              parsedStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-            });
-
-            final rawKasStatuses = map['kasPaymentStatuses'] as Map<String, dynamic>? ?? {};
-            final Map<int, String> parsedKasStatuses = {};
-            rawKasStatuses.forEach((key, val) {
-              parsedKasStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
-            });
-
-            return MemberModel(
-              id: map['id'] ?? '',
-              name: map['name'] ?? '',
-              waNumber: map['waNumber'] ?? '',
-              role: map['role'] ?? 'Member',
-              isWinner: map['isWinner'] ?? false,
-              winPeriodLabel: map['winPeriodLabel'] ?? '',
-              paymentStatuses: parsedStatuses,
-              kasPaymentStatuses: parsedKasStatuses,
-              userId: map['userId'],
-            );
-          }).toList();
-        }
+        List<MemberModel> membersList = _parseMembersList(data['members']);
+        List<MemberModel> pendingMembersList = _parseMembersList(data['pendingMembers']);
 
         final Map<int, String> parsedWinners = {};
         if (data['winnerSchedule'] != null && data['winnerSchedule'] is Map) {
@@ -452,6 +377,8 @@ class FirebaseService {
             members: membersList,
             joinCode: data['joinCode'] ?? '',
             memberUserIds: List<String>.from(data['memberUserIds'] ?? []),
+            pendingMembers: pendingMembersList,
+            pendingMemberUserIds: List<String>.from(data['pendingMemberUserIds'] ?? []),
             startDate: data['startDate'] != null ? (data['startDate'] as Timestamp).toDate() : null,
           );
       }).toList();
@@ -532,12 +459,12 @@ class FirebaseService {
         },
       );
 
-      final updatedMembers = List<MemberModel>.from(group.members)..add(newMember);
-      final updatedMemberUserIds = List<String>.from(group.memberUserIds)..add(userId);
+      final updatedPendingMembers = List<MemberModel>.from(group.pendingMembers)..add(newMember);
+      final updatedPendingMemberUserIds = List<String>.from(group.pendingMemberUserIds)..add(userId);
 
       final updatedGroup = group.copyWith(
-        members: updatedMembers,
-        memberUserIds: updatedMemberUserIds,
+        pendingMembers: updatedPendingMembers,
+        pendingMemberUserIds: updatedPendingMemberUserIds,
       );
 
       await syncGroup(updatedGroup);
@@ -561,5 +488,129 @@ class FirebaseService {
       debugPrint("❌ Firestore Group delete error: $e");
       return false;
     }
+  }
+
+  // Approve Member
+  Future<bool> approveMember(GroupModel group, MemberModel pendingMember) async {
+    try {
+      final newMembers = List<MemberModel>.from(group.members)..add(pendingMember);
+      final newMemberUserIds = List<String>.from(group.memberUserIds);
+      if (pendingMember.userId != null) {
+        newMemberUserIds.add(pendingMember.userId!);
+      }
+
+      final newPendingMembers = List<MemberModel>.from(group.pendingMembers)
+        ..removeWhere((m) => m.id == pendingMember.id);
+      final newPendingMemberUserIds = List<String>.from(group.pendingMemberUserIds)
+        ..removeWhere((id) => id == pendingMember.userId);
+
+      // Re-initialize payment statuses for all members because total periods changed
+      final updatedMembers = newMembers.map((m) {
+        final newPaymentStatuses = Map<int, String>.from(m.paymentStatuses);
+        final newKasPaymentStatuses = Map<int, String>.from(m.kasPaymentStatuses);
+        
+        for (int i = 1; i <= newMembers.length; i++) {
+          if (!newPaymentStatuses.containsKey(i)) {
+            newPaymentStatuses[i] = 'BELUM LUNAS';
+          }
+          if (!newKasPaymentStatuses.containsKey(i)) {
+            newKasPaymentStatuses[i] = 'BELUM LUNAS';
+          }
+        }
+        return m.copyWith(
+          paymentStatuses: newPaymentStatuses,
+          kasPaymentStatuses: newKasPaymentStatuses,
+        );
+      }).toList();
+
+      final updatedGroup = group.copyWith(
+        members: updatedMembers,
+        memberUserIds: newMemberUserIds,
+        pendingMembers: newPendingMembers,
+        pendingMemberUserIds: newPendingMemberUserIds,
+      );
+
+      await syncGroup(updatedGroup);
+      return true;
+    } catch (e) {
+      debugPrint("approveMember error: $e");
+      return false;
+    }
+  }
+
+  // Reject Member
+  Future<bool> rejectMember(GroupModel group, MemberModel pendingMember) async {
+    try {
+      final newPendingMembers = List<MemberModel>.from(group.pendingMembers)
+        ..removeWhere((m) => m.id == pendingMember.id);
+      final newPendingMemberUserIds = List<String>.from(group.pendingMemberUserIds)
+        ..removeWhere((id) => id == pendingMember.userId);
+
+      final updatedGroup = group.copyWith(
+        pendingMembers: newPendingMembers,
+        pendingMemberUserIds: newPendingMemberUserIds,
+      );
+
+      await syncGroup(updatedGroup);
+      return true;
+    } catch (e) {
+      debugPrint("rejectMember error: $e");
+      return false;
+    }
+  }
+
+  // Helpers
+  List<MemberModel> _parseMembersList(dynamic rawList) {
+    if (rawList == null || rawList is! List) return [];
+    return rawList.map((m) {
+      final map = Map<String, dynamic>.from(m as Map);
+      final rawStatuses = map['paymentStatuses'] as Map<String, dynamic>? ?? {};
+      final Map<int, String> parsedStatuses = {};
+      rawStatuses.forEach((key, val) {
+        parsedStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
+      });
+
+      final rawKasStatuses = map['kasPaymentStatuses'] as Map<String, dynamic>? ?? {};
+      final Map<int, String> parsedKasStatuses = {};
+      rawKasStatuses.forEach((key, val) {
+        parsedKasStatuses[int.tryParse(key.toString()) ?? 1] = val.toString();
+      });
+
+      return MemberModel(
+        id: map['id'] ?? '',
+        name: map['name'] ?? '',
+        waNumber: map['waNumber'] ?? '',
+        role: map['role'] ?? 'Member',
+        isWinner: map['isWinner'] ?? false,
+        winPeriodLabel: map['winPeriodLabel'] ?? '',
+        paymentStatuses: parsedStatuses,
+        kasPaymentStatuses: parsedKasStatuses,
+        userId: map['userId'],
+      );
+    }).toList();
+  }
+
+  Map<String, dynamic> _memberToMap(MemberModel m) {
+    final Map<String, String> statusesStr = {};
+    m.paymentStatuses.forEach((periodIndex, status) {
+      statusesStr[periodIndex.toString()] = status;
+    });
+
+    final Map<String, String> kasStatusesStr = {};
+    m.kasPaymentStatuses.forEach((periodIndex, status) {
+      kasStatusesStr[periodIndex.toString()] = status;
+    });
+
+    return {
+      'id': m.id,
+      'name': m.name,
+      'waNumber': m.waNumber,
+      'role': m.role,
+      'isWinner': m.isWinner,
+      'winPeriodLabel': m.winPeriodLabel,
+      'paymentStatuses': statusesStr,
+      'kasPaymentStatuses': kasStatusesStr,
+      if (m.userId != null) 'userId': m.userId,
+    };
   }
 }

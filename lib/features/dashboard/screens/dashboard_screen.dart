@@ -1118,8 +1118,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           builder: (context) => WinnerOrderModal(
                             group: group,
                             onSave: (newSchedule) {
+                              final scheduledWinnerNames = newSchedule.values.toSet();
+                              final updatedMembers = group.members.map((m) {
+                                final isNowWinner = scheduledWinnerNames.contains(m.name);
+                                String winLabel = isNowWinner ? 'Sudah Menang' : 'Belum Menang';
+                                
+                                // Optionally, find which period they won
+                                if (isNowWinner) {
+                                  for (var entry in newSchedule.entries) {
+                                    if (entry.value == m.name) {
+                                      winLabel = 'Pemenang Periode ${entry.key}';
+                                      break;
+                                    }
+                                  }
+                                }
+                                
+                                return m.copyWith(
+                                  isWinner: isNowWinner,
+                                  winPeriodLabel: winLabel,
+                                );
+                              }).toList();
+                              
                               final updatedGroup = group.copyWith(
                                 winnerSchedule: newSchedule,
+                                members: updatedMembers,
                               );
                               widget.onGroupUpdated(updatedGroup);
                             },

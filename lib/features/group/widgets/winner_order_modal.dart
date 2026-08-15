@@ -30,11 +30,8 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
   Widget build(BuildContext context) {
     final candidateNames = widget.group.members.map((m) => m.name).toList();
     
-    // Collect past winners so they can be excluded from future selections
-    final pastWinners = schedule.entries
-        .where((e) => e.key < widget.group.activePeriodIndex)
-        .map((e) => e.value)
-        .toSet();
+    // Collect all scheduled winners so they can be excluded from other periods
+    final allScheduledWinners = schedule.values.toSet();
 
     return Dialog(
       backgroundColor: AppTheme.cardBg,
@@ -68,7 +65,7 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
                 final isPast = periodIndex < widget.group.activePeriodIndex;
                 final isCurrent = periodIndex == widget.group.activePeriodIndex;
 
-                final currentWinner = schedule[periodIndex] ?? candidateNames[index % candidateNames.length];
+                final currentWinner = schedule[periodIndex];
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -96,28 +93,31 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
                       ),
                       if (isPast)
                         Text(
-                          '$currentWinner${AppLocalizations.of(context)!.winModalWon}',
+                          '${currentWinner ?? 'Belum ada'}${AppLocalizations.of(context)!.winModalWon}',
                           style: const TextStyle(fontSize: 12, color: AppTheme.accent, fontWeight: FontWeight.bold),
                         )
                       else
                         Builder(
                           builder: (context) {
-                            // Filter out past winners for the dropdown options
+                            // Filter out anyone already scheduled, EXCEPT the person currently selected for THIS period
                             final availableOptions = candidateNames
-                                .where((name) => !pastWinners.contains(name))
+                                .where((name) => !allScheduledWinners.contains(name) || name == currentWinner)
                                 .toList();
                                 
-                            // Fallback if availableOptions is somehow empty
-                            if (availableOptions.isEmpty) {
-                              availableOptions.add(currentWinner);
+                            // Add a default placeholder if empty to prevent crash
+                            if (availableOptions.isEmpty && currentWinner == null) {
+                               availableOptions.add('Kosong');
+                            } else if (availableOptions.isEmpty && currentWinner != null) {
+                               availableOptions.add(currentWinner);
                             }
 
                             final safeValue = availableOptions.contains(currentWinner) 
                                 ? currentWinner 
-                                : availableOptions.first;
+                                : null;
 
                             return DropdownButton<String>(
                               value: safeValue,
+                              hint: const Text('Pilih Pemenang', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                               dropdownColor: AppTheme.cardBg,
                               underline: const SizedBox(),
                               style: const TextStyle(fontSize: 12, color: AppTheme.textMain, fontWeight: FontWeight.bold),
@@ -128,7 +128,7 @@ class _WinnerOrderModalState extends State<WinnerOrderModal> {
                                 );
                               }).toList(),
                               onChanged: (String? newValue) {
-                                if (newValue != null) {
+                                if (newValue != null && newValue != 'Kosong') {
                                   setState(() {
                                     schedule[periodIndex] = newValue;
                                   });

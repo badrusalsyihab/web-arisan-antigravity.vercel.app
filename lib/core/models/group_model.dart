@@ -14,6 +14,8 @@ class GroupModel {
 
   final String joinCode;
   final List<String> memberUserIds;
+  final List<MemberModel> pendingMembers;
+  final List<String> pendingMemberUserIds;
   final DateTime? startDate;
   final List<KasExpenseModel> kasExpenses;
 
@@ -29,6 +31,8 @@ class GroupModel {
     required this.winnerSchedule,
     this.joinCode = '',
     this.memberUserIds = const [],
+    this.pendingMembers = const [],
+    this.pendingMemberUserIds = const [],
     this.startDate,
     this.kasExpenses = const [],
   });
@@ -45,6 +49,8 @@ class GroupModel {
     Map<int, String>? winnerSchedule,
     String? joinCode,
     List<String>? memberUserIds,
+    List<MemberModel>? pendingMembers,
+    List<String>? pendingMemberUserIds,
     DateTime? startDate,
     List<KasExpenseModel>? kasExpenses,
   }) {
@@ -60,6 +66,8 @@ class GroupModel {
       winnerSchedule: winnerSchedule ?? this.winnerSchedule,
       joinCode: joinCode ?? this.joinCode,
       memberUserIds: memberUserIds ?? this.memberUserIds,
+      pendingMembers: pendingMembers ?? this.pendingMembers,
+      pendingMemberUserIds: pendingMemberUserIds ?? this.pendingMemberUserIds,
       startDate: startDate ?? this.startDate,
       kasExpenses: kasExpenses ?? this.kasExpenses,
     );

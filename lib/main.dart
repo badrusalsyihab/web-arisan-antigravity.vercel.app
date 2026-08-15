@@ -497,23 +497,60 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   final isAdmin = currentGroup.isAdmin(widget.currentUser.email);
                   
                   if (isAdmin) {
-                    return PopupMenuButton<String>(
-                      icon: Icon(Icons.more_vert, color: _isScrolled ? Colors.white : AppTheme.textMain),
-                      onSelected: (value) {
-                        if (value == 'delete') {
-                          _deleteGroup();
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                              SizedBox(width: 8),
-                              Text('Hapus Kelompok', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                            ],
+                    return Row(
+                      children: [
+                        if (currentGroup.pendingMembers.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Stack(
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.notifications_outlined, color: _isScrolled ? Colors.white : AppTheme.textMain),
+                                  onPressed: () {
+                                    _showPendingMembersModal(context, currentGroup);
+                                  },
+                                ),
+                                Positioned(
+                                  right: 8,
+                                  top: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '${currentGroup.pendingMembers.length}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert, color: _isScrolled ? Colors.white : AppTheme.textMain),
+                          onSelected: (value) {
+                            if (value == 'delete') {
+                              _deleteGroup();
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Hapus Kelompok', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     );
@@ -634,6 +671,85 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showPendingMembersModal(BuildContext context, GroupModel group) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final pendingMembers = group.pendingMembers;
+            
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Daftar Calon Anggota', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
+                  const SizedBox(height: 16),
+                  if (pendingMembers.isEmpty)
+                    const Text('Tidak ada anggota yang menunggu persetujuan.', style: TextStyle(color: AppTheme.textMuted))
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: pendingMembers.length,
+                      itemBuilder: (context, index) {
+                        final pending = pendingMembers[index];
+                        return ListTile(
+                          title: Text(pending.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Menunggu persetujuan'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.close, color: Colors.red),
+                                onPressed: () async {
+                                  final success = await _firebaseService.rejectMember(group, pending);
+                                  if (success) {
+                                    final updatedGroup = await _firebaseService.getGroup(group.id);
+                                    if (updatedGroup != null) {
+                                      _onGroupStateUpdated(updatedGroup);
+                                      group = updatedGroup;
+                                      setModalState(() {});
+                                    }
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.check, color: AppTheme.primary),
+                                onPressed: () async {
+                                  final success = await _firebaseService.approveMember(group, pending);
+                                  if (success) {
+                                    final updatedGroup = await _firebaseService.getGroup(group.id);
+                                    if (updatedGroup != null) {
+                                      _onGroupStateUpdated(updatedGroup);
+                                      group = updatedGroup;
+                                      setModalState(() {});
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Tutup', style: TextStyle(color: AppTheme.accent)),
+                  )
+                ],
+              ),
+            );
+          },
         );
       },
     );
